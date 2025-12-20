@@ -19,7 +19,12 @@ This guide explains how to deploy the **Diet App** ("Chef") on your Ubuntu VM us
 5.  **Repository URL**: `https://github.com/guido92/Diet.git`
 6.  **Compose path**: `app/docker-compose.prod.yml`
     > **Note**: The file is inside the `app` folder in the repo.
-7.  **Environmental variables**: None required (configured in compose file), but you can override `NODE_ENV` if needed.
+7.  **Environmental variables**:
+    *   Click on **Advanced mode** or **Environment variables** button.
+    *   Add a new variable:
+        *   **Name**: `GOOGLE_API_KEY`
+        *   **Value**: `your-google-api-key-here` (copy it from your `.env.local`)
+    *   (Optional) You can also set `NODE_ENV` to `production`.
 8.  Click **Deploy the stack**.
 
 Wait for the build to complete. It might take a few minutes as it builds the Docker image from source.
