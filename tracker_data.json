@@ -1,0 +1,2981 @@
+{
+  "currentUser": "Michael",
+  "users": {
+    "Michael": {
+      "startWeight": 111,
+      "currentWeight": 111,
+      "height": 170,
+      "plan": {
+        "Monday": {
+          "training": false,
+          "breakfast": "b2_m",
+          "snack_am": "sam1",
+          "lunch": "l_minestra_m",
+          "snack_pm": "spm_frutta",
+          "dinner": "d1_merluzzo"
+        },
+        "Tuesday": {
+          "training": true,
+          "breakfast": "b2_m",
+          "snack_am": "sam2",
+          "lunch": "l3_m_bresaola",
+          "snack_pm": "spm_frutta",
+          "dinner": "d1_pollo"
+        },
+        "Wednesday": {
+          "training": false,
+          "breakfast": "b1_m",
+          "snack_am": "sam1",
+          "lunch": "l3_m_merluzzo",
+          "snack_pm": "spm_frutta",
+          "dinner": "d_uova_m"
+        },
+        "Thursday": {
+          "training": true,
+          "breakfast": "b3_m",
+          "snack_am": "sam2",
+          "lunch": "l3_m_tacchino",
+          "snack_pm": "spm_yogurt",
+          "dinner": "d1_m_pollo"
+        },
+        "Friday": {
+          "training": false,
+          "breakfast": "b3_m",
+          "snack_am": "sam1",
+          "lunch": "l3_m_pollo",
+          "snack_pm": "spm_yogurt",
+          "dinner": "d1_m_pesce_bianco"
+        },
+        "Saturday": {
+          "training": false,
+          "breakfast": "b3_m",
+          "snack_am": "sam2",
+          "lunch": "l_suoceri",
+          "snack_pm": "spm_frutta",
+          "dinner": "d_amici"
+        },
+        "Sunday": {
+          "training": false,
+          "breakfast": "b1_m",
+          "snack_am": "sam1",
+          "lunch": "l2_m",
+          "snack_pm": "spm_frutta",
+          "dinner": "d1_m_manzo"
+        }
+      },
+      "logs": [],
+      "guidelines": [
+        {
+          "id": "b1_m",
+          "name": "Toast Proteico + Marmellata (Michael)",
+          "description": "2 Fette pane toast + 100g Philadelphia Protein + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Philadelphia Protein",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b1_j",
+          "name": "Toast Proteico + Marmellata (Jessica)",
+          "description": "1 Fetta grande pane toast (30g) + 100g Philadelphia Protein + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Philadelphia Protein",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b2_m",
+          "name": "Biscotti e Frutta (Michael)",
+          "description": "35g Biscotti Integrali + 200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Biscotti Integrali",
+              "amount": 35,
+              "unit": "g"
+            },
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b2_j",
+          "name": "Biscotti e Frutta (Jessica)",
+          "description": "35g Biscotti Integrali + 200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Biscotti Integrali",
+              "amount": 35,
+              "unit": "g"
+            },
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b3_m",
+          "name": "Toast Salato Light (Michael)",
+          "description": "2 Fette pane toast + 1 Fetta Sottiletta Light + 100g Affettato magro",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Sottiletta Light",
+              "amount": 20,
+              "unit": "g"
+            },
+            {
+              "name": "Affettato Magro (Fesa/Bresaola)",
+              "amount": 100,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b3_j",
+          "name": "Toast Salato Light (Jessica)",
+          "description": "1 Fetta grande pane toast (30g) + 1 Fetta Sottiletta Light + 100g Affettato magro",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Sottiletta Light",
+              "amount": 20,
+              "unit": "g"
+            },
+            {
+              "name": "Affettato Magro (Fesa/Bresaola)",
+              "amount": 100,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b4_m",
+          "name": "Yogurt Greco e Avena (Michael)",
+          "description": "200g Yogurt Greco Magro + 30g Granola + 10g Miele",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Granola/Fiocchi d'Avena",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Miele",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "summer",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b4_j",
+          "name": "Yogurt Greco e Avena (Jessica)",
+          "description": "150g Yogurt Greco Magro + 30g Granola + 10g Miele",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Granola/Fiocchi d'Avena",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Miele",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "summer",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "sam1",
+          "name": "Frutta Fresca",
+          "description": "200g Frutta fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_am",
+          "condition": "rest",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "sam2",
+          "name": "Toast Burro Arachidi (Pre-Workout)",
+          "description": "1 Fetta pane tostato + 10g Burro d'Arachidi + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 25,
+              "unit": "g"
+            },
+            {
+              "name": "Burro d'Arachidi",
+              "amount": 10,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_am",
+          "condition": "training",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l1_m",
+          "name": "Legumi e Verdure (Michael)",
+          "description": "240g Legumi sgocciolati + 300g Verdure di stagione. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Ceci/Fagioli/Lenticchie",
+              "amount": 240,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l1_j",
+          "name": "Legumi e Verdure (Jessica)",
+          "description": "240g Legumi + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Ceci/Fagioli/Lenticchie",
+              "amount": 240,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l2_m",
+          "name": "Pasta/Riso/Cereali (Michael)",
+          "description": "80g Pasta/Riso/Farro/Orzo + 100g Passata/Verdure. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Pasta/Riso/Farro/Orzo",
+              "amount": 80,
+              "unit": "g"
+            },
+            {
+              "name": "Passata di Pomodoro",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l2_j",
+          "name": "Pasta/Riso/Cereali (Jessica)",
+          "description": "60g Pasta/Riso/Farro/Orzo + 100g Passata/Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pasta/Riso/Farro/Orzo",
+              "amount": 60,
+              "unit": "g"
+            },
+            {
+              "name": "Passata di Pomodoro",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_pollo",
+          "name": "Petto di Pollo e Verdure (Michael)",
+          "description": "200g Petto di Pollo + 50g Pane + 300g Verdure. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_pollo",
+          "name": "Petto di Pollo e Verdure (Jessica)",
+          "description": "200g Petto di Pollo + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_tacchino",
+          "name": "Fesa di Tacchino e Verdure (Michael)",
+          "description": "200g Fesa di Tacchino + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Fesa di Tacchino",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_tacchino",
+          "name": "Fesa di Tacchino e Verdure (Jessica)",
+          "description": "200g Fesa di Tacchino + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Fesa di Tacchino",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_bresaola",
+          "name": "Bresaola e Verdure (Michael)",
+          "description": "150g Bresaola + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Bresaola",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_bresaola",
+          "name": "Bresaola e Verdure (Jessica)",
+          "description": "150g Bresaola + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Bresaola",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_merluzzo",
+          "name": "Merluzzo e Verdure (Michael)",
+          "description": "250g Merluzzo + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Merluzzo/Nasello",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_merluzzo",
+          "name": "Merluzzo e Verdure (Jessica)",
+          "description": "250g Merluzzo + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Merluzzo/Nasello",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l_minestra_m",
+          "name": "Minestra calda di Verdure (Michael)",
+          "description": "Passato o minestra di verdura (300g) + 50g Pane. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Verdura di Stagione (Zuppa)",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l_minestra_j",
+          "name": "Minestra calda di Verdure (Jessica)",
+          "description": "Passato o minestra di verdura (300g) + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Verdura di Stagione (Zuppa)",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_pollo",
+          "name": "Pollo alla Piastra (Michael)",
+          "description": "200g Pollo + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_pollo",
+          "name": "Pollo alla Piastra (Jessica)",
+          "description": "200g Pollo + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_manzo",
+          "name": "Tagliata di Manzo (Michael)",
+          "description": "200g Manzo + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Manzo Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_manzo",
+          "name": "Tagliata di Manzo (Jessica)",
+          "description": "200g Manzo + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Manzo Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_salmone",
+          "name": "Salmone (Michael)",
+          "description": "200g Salmone + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Salmone",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_m_pesce_bianco",
+          "name": "Pesce Bianco (Michael)",
+          "description": "250g Pesce Bianco (Orata, Merluzzo, Spigola) + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pesce Bianco / Merluzzo",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_salmone",
+          "name": "Salmone (Jessica)",
+          "description": "200g Salmone + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Salmone",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_j_pesce_bianco",
+          "name": "Pesce Bianco (Jessica)",
+          "description": "250g Pesce Bianco (Orata, Merluzzo, Spigola) + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pesce Bianco / Merluzzo",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d_uova_m",
+          "name": "Uova (Michael)",
+          "description": "3 Uova + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Uova",
+              "amount": 3,
+              "unit": "pz"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d_uova_j",
+          "name": "Uova (Jessica)",
+          "description": "2 Uova + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Uova",
+              "amount": 2,
+              "unit": "pz"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d2",
+          "name": "Social / Pasto Libero (Controllato)",
+          "description": "Cena fuori? Niente alcool/aperitivo. Primo semplice o Secondo di carne magra.",
+          "ingredients": [],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "spm_frutta",
+          "name": "Frutta Fresca",
+          "description": "200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_pm",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "spm_yogurt",
+          "name": "Yogurt Greco",
+          "description": "150g Yogurt Greco Magro",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 150,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_pm",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l_suoceri",
+          "name": "Pranzo dai Suoceri 🏠",
+          "description": "Gestisci le porzioni: preferisci proteine e verdure, evita bis e salse pesanti.",
+          "ingredients": [],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d_amici",
+          "name": "Uscita con Amici 🍻",
+          "description": "Scegli opzioni magre, evita fritti e salse. Max 1 calice di vino.",
+          "ingredients": [],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        }
+      ]
+    },
+    "Jessica": {
+      "startWeight": 70,
+      "currentWeight": 70,
+      "height": 165,
+      "plan": {
+        "Monday": {
+          "breakfast": "b1_j",
+          "breakfast_details": {
+            "name": "Toast Proteico con Cream Cheese e Confettura di Fragole",
+            "recipe": "1 Fetta grande di Pane Toast (30g) tostata, spalmata con 100g di Philadelphia Protein e guarnita con 10g di Marmellata light."
+          },
+          "snack_am": "sam2",
+          "snack_am_details": {
+            "name": "Mini Toast Pre-Workout con Burro di Arachidi",
+            "recipe": "1 Fetta di pane tostato (25g) con 10g di Burro d'Arachidi e 10g di Marmellata (consumare prima dell'allenamento)."
+          },
+          "lunch": "l2_j",
+          "lunch_details": {
+            "name": "Insalata di Farro freddo con Spinaci e Passata",
+            "recipe": "60g di Farro (Offerta Conad) cotto e condito con 100g di Passata di Pomodoro, 200g di Spinaci freschi (Offerta Conad) saltati in padella e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Insalata-di-farro-e-broccoli.html",
+            "imageUrl": "https://www.giallozafferano.it/images/220-22034/Insalata-di-farro-e-broccoli_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Yogurt Greco Magro post-allenamento",
+            "recipe": "150g di Yogurt Greco Magro 0%."
+          },
+          "dinner": "d1_j_pollo",
+          "dinner_details": {
+            "name": "Petto di Pollo 'Come una volta' con Radicchio e Pane Integrale",
+            "recipe": "200g di Petto di Pollo 'Come una volta' (Offerta Conad) alla piastra, accompagnato da 300g di Radicchio Rosso di Treviso IGP (Offerta Conad) condito con 10g di Olio EVO e 30g di Pane.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Piadina-di-grano-saraceno-con-straccetti-di-pollo-e-chips-al-forno.html",
+            "imageUrl": "https://www.giallozafferano.it/images/154-15457/Piadina-di-grano-saraceno-con-straccetti-di-pollo-e-chips-al-forno_360x300.jpg"
+          },
+          "training": false
+        },
+        "Tuesday": {
+          "breakfast": "b2_j",
+          "breakfast_details": {
+            "name": "Biscotti Integrali e Mele Golden fresche",
+            "recipe": "35g di Biscotti Integrali serviti con 200g di Mele Golden (Offerta Conad)."
+          },
+          "snack_am": "sam1",
+          "snack_am_details": {
+            "name": "Mele Golden croccanti",
+            "recipe": "200g di Mele Golden (Offerta Conad)."
+          },
+          "lunch": "l1_j",
+          "lunch_details": {
+            "name": "Insalata Mediterranea di Ceci e Pomodoro Camone",
+            "recipe": "240g di Ceci (Legumi Offerta Conad), mischiati con 300g di Pomodoro Camone (Offerta Conad) e Cetrioli freschi. Condire con 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Insalata-di-ceci-estiva.html",
+            "imageUrl": "https://www.giallozafferano.it/images/211-21118/Insalata-di-ceci-estiva_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Arance Navel",
+            "recipe": "200g di Arance Navel (Offerta Conad) sbucciate."
+          },
+          "dinner": "d1_j_pesce",
+          "dinner_details": {
+            "name": "Filetto di Orata al Cartoccio con Zucchine e Rosmarino",
+            "recipe": "200g di Filetto di Orata (Offerta Conad) cotto al cartoccio con erbe aromatiche. Contorno di 300g di Zucchine grigliate e 30g di Pane, conditi con 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Filetto-di-orata-al-cartoccio.html",
+            "imageUrl": "https://www.giallozafferano.it/images/217-21709/Filetto-di-orata-al-cartoccio_360x300.jpg"
+          },
+          "training": false
+        },
+        "Wednesday": {
+          "breakfast": "b4_j",
+          "breakfast_details": {
+            "name": "Yogurt Greco con Avena Croccante e Miele",
+            "recipe": "150g di Yogurt Greco Magro, 30g di Granola/Fiocchi d'Avena e 10g di Miele."
+          },
+          "snack_am": "sam2",
+          "snack_am_details": {
+            "name": "Mini Toast Pre-Workout con Burro di Arachidi",
+            "recipe": "1 Fetta di pane tostato (25g) con 10g di Burro d'Arachidi e 10g di Marmellata (consumare prima dell'allenamento)."
+          },
+          "lunch": "l3_j_bresaola",
+          "lunch_details": {
+            "name": "Bresaola con Rucola, Pomodorini e Pane Integrale",
+            "recipe": "150g di Bresaola servita con 300g di Rucola e Pomodorini freschi. Accompagnato da 50g di Pane e condito con 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Spaghetti-integrali-con-pomodorini-confit-feta-e-pesto-di-rucola.html",
+            "imageUrl": "https://www.giallozafferano.it/images/156-15697/Spaghetti-integrali-con-pomodorini-confit-feta-e-pesto-di-rucola_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Yogurt Greco Magro 0%",
+            "recipe": "150g di Yogurt Greco Magro 0%."
+          },
+          "dinner": "d_uova_j",
+          "dinner_details": {
+            "name": "Omelette light con spinaci freschi e pane",
+            "recipe": "Omelette preparata con 2 Uova intere. Contorno di 300g di Spinaci (Offerta Conad) al vapore o saltati. 30g di Pane e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Grissini-tricolore.html",
+            "imageUrl": "https://www.giallozafferano.it/images/207-20785/Grissini-tricolore_360x300.jpg"
+          },
+          "training": false
+        },
+        "Thursday": {
+          "breakfast": "b1_j",
+          "breakfast_details": {
+            "name": "Toast proteico con Cream Cheese e Confettura di Frutti Rossi",
+            "recipe": "1 Fetta grande di Pane Toast (30g) tostata, spalmata con 100g di Philadelphia Protein e guarnita con 10g di Marmellata."
+          },
+          "snack_am": "sam1",
+          "snack_am_details": {
+            "name": "Clementine fresche",
+            "recipe": "200g di Clementine (Offerta Conad)."
+          },
+          "lunch": "l2_j",
+          "lunch_details": {
+            "name": "Spaghetti al pomodoro fresco e Broccolo",
+            "recipe": "60g di Spaghetti conditi con 100g di Passata di Pomodoro e 200g di Broccolo lessato. Condire con 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Spaghetti-al-pomodoro-fresco-basilico-e-stracciatella.html",
+            "imageUrl": "https://www.giallozafferano.it/images/266-26660/Spaghetti-al-pomodoro-fresco-basilico-e-stracciatella_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Mele Golden fresche",
+            "recipe": "200g di Mele Golden (Offerta Conad)."
+          },
+          "dinner": "d1_j_manzo",
+          "dinner_details": {
+            "name": "Tagliata di Scottona magra con Radicchio alla Piastra",
+            "recipe": "200g di Tartare di Scottona (Offerta Conad) cotta alla piastra come una tagliata magra. Servita con 300g di Radicchio alla piastra e 30g di Pane. 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Radicchio-alla-piastra-con-pancetta-e-pepe-rosa.html",
+            "imageUrl": "https://www.giallozafferano.it/images/6-653/Radicchio-alla-piastra-con-pancetta-e-pepe-rosa_360x300.jpg"
+          },
+          "training": false
+        },
+        "Friday": {
+          "breakfast": "b2_j",
+          "breakfast_details": {
+            "name": "Biscotti Integrali e spicchi d'Arancia",
+            "recipe": "35g di Biscotti Integrali serviti con 200g di Arance Navel (Offerta Conad)."
+          },
+          "snack_am": "sam2",
+          "snack_am_details": {
+            "name": "Mini Toast Pre-Workout con Burro di Arachidi",
+            "recipe": "1 Fetta di pane tostato (25g) con 10g di Burro d'Arachidi e 10g di Marmellata (consumare prima dell'allenamento)."
+          },
+          "lunch": "l3_j_merluzzo",
+          "lunch_details": {
+            "name": "Filetto di Merluzzo al limone con Fagiolini al vapore",
+            "recipe": "250g di Merluzzo cotto a vapore o al forno con limone. Contorno di 300g di Fagiolini al vapore. 50g di Pane e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Filetto-di-merluzzo-al-vapore-con-pomodori-e-cucunci.html",
+            "imageUrl": "https://www.giallozafferano.it/images/306-30615/Filetto-di-merluzzo-al-vapore-con-pomodori-e-cucunci_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Yogurt Greco Magro 0%",
+            "recipe": "150g di Yogurt Greco Magro 0%."
+          },
+          "dinner": "d1_j_pesce",
+          "dinner_details": {
+            "name": "Filetto di Salmone Superior con Asparagi",
+            "recipe": "200g di Filetto di Salmone Superior (Offerta Conad) cotto al forno. Contorno di 300g di Asparagi lessati, 30g di Pane e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Filetto-di-salmone-in-padella.html",
+            "imageUrl": "https://www.giallozafferano.it/images/254-25433/Filetto-di-salmone-in-padella_360x300.jpg"
+          },
+          "training": false
+        },
+        "Saturday": {
+          "breakfast": "b4_j",
+          "breakfast_details": {
+            "name": "Yogurt Greco con Avena e Miele",
+            "recipe": "150g di Yogurt Greco Magro, 30g di Granola/Fiocchi d'Avena e 10g di Miele."
+          },
+          "snack_am": "sam1",
+          "snack_am_details": {
+            "name": "Arance Navel",
+            "recipe": "200g di Arance Navel (Offerta Conad)."
+          },
+          "lunch": "l_suoceri",
+          "lunch_details": {
+            "name": "Pranzo dai Suoceri 🏠",
+            "recipe": "Pasto libero controllato: gestire le porzioni, preferendo proteine (carne magra o pesce) e verdure. Evitare bis e salse pesanti."
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Clementine fresche",
+            "recipe": "200g di Clementine (Offerta Conad)."
+          },
+          "dinner": "d1_j_pollo",
+          "dinner_details": {
+            "name": "Spiedini di Pollo e Peperoni con Insalata",
+            "recipe": "200g di Petto di Pollo (Offerta Conad) a spiedino con Peperoni grigliati. Contorno di 300g di Insalata mista, 30g di Pane e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Insalata-di-pollo-e-zucchine.html",
+            "imageUrl": "https://www.giallozafferano.it/images/177-17728/Insalata-di-pollo-e-zucchine_360x300.jpg"
+          },
+          "training": false
+        },
+        "Sunday": {
+          "breakfast": "b1_j",
+          "breakfast_details": {
+            "name": "Toast proteico Domenicale",
+            "recipe": "1 Fetta grande di Pane Toast (30g) tostata, spalmata con 100g di Philadelphia Protein e guarnita con 10g di Marmellata."
+          },
+          "snack_am": "sam1",
+          "snack_am_details": {
+            "name": "Mele rosse fresche",
+            "recipe": "200g di Mele Golden (Offerta Conad)."
+          },
+          "lunch": "l2_j",
+          "lunch_details": {
+            "name": "Zuppa fredda di Fagioli Cannellini e Pomodorini",
+            "recipe": "240g di Fagioli Cannellini (Legumi Offerta Conad) conditi con 300g di verdure fresche (pomodorini, cipolla rossa) e 10g di Olio EVO.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Zuppa-di-fagioli.html",
+            "imageUrl": "https://www.giallozafferano.it/images/258-25829/Zuppa-di-fagioli_360x300.jpg"
+          },
+          "snack_pm": "spm1",
+          "snack_pm_details": {
+            "name": "Yogurt Greco Magro 0%",
+            "recipe": "150g di Yogurt Greco Magro 0%."
+          },
+          "dinner": "d_amici",
+          "dinner_details": {
+            "name": "Cena Controllata Fuori",
+            "recipe": "Uscita con Amici/Pasto Libero Controllato (MAX 1 pasto sociale/libero nel weekend). Scegliere opzioni magre, evitare fritti e salse. Max 1 calice di vino.",
+            "recipeUrl": "https://ricette.giallozafferano.it/Patate-al-forno.html",
+            "imageUrl": "https://www.giallozafferano.it/images/242-24202/Patate-al-forno_360x300.jpg"
+          },
+          "training": false
+        }
+      },
+      "logs": [],
+      "guidelines": [
+        {
+          "id": "b1_m",
+          "name": "Toast Proteico + Marmellata (Michael)",
+          "description": "2 Fette pane toast + 100g Philadelphia Protein + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Philadelphia Protein",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b1_j",
+          "name": "Toast Proteico + Marmellata (Jessica)",
+          "description": "1 Fetta grande pane toast (30g) + 100g Philadelphia Protein + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Philadelphia Protein",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b2_m",
+          "name": "Biscotti e Frutta (Michael)",
+          "description": "35g Biscotti Integrali + 200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Biscotti Integrali",
+              "amount": 35,
+              "unit": "g"
+            },
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b2_j",
+          "name": "Biscotti e Frutta (Jessica)",
+          "description": "35g Biscotti Integrali + 200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Biscotti Integrali",
+              "amount": 35,
+              "unit": "g"
+            },
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b3_m",
+          "name": "Toast Salato Light (Michael)",
+          "description": "2 Fette pane toast + 1 Fetta Sottiletta Light + 100g Affettato magro",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Sottiletta Light",
+              "amount": 20,
+              "unit": "g"
+            },
+            {
+              "name": "Affettato Magro (Fesa/Bresaola)",
+              "amount": 100,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b3_j",
+          "name": "Toast Salato Light (Jessica)",
+          "description": "1 Fetta grande pane toast (30g) + 1 Fetta Sottiletta Light + 100g Affettato magro",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Sottiletta Light",
+              "amount": 20,
+              "unit": "g"
+            },
+            {
+              "name": "Affettato Magro (Fesa/Bresaola)",
+              "amount": 100,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "b4_m",
+          "name": "Yogurt Greco e Avena (Michael)",
+          "description": "200g Yogurt Greco Magro + 30g Granola + 10g Miele",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Granola/Fiocchi d'Avena",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Miele",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "summer",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "b4_j",
+          "name": "Yogurt Greco e Avena (Jessica)",
+          "description": "150g Yogurt Greco Magro + 30g Granola + 10g Miele",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Granola/Fiocchi d'Avena",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Miele",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "breakfast",
+          "condition": "always",
+          "season": "summer",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "sam1",
+          "name": "Frutta Fresca",
+          "description": "200g Frutta fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_am",
+          "condition": "rest",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "sam2",
+          "name": "Toast Burro Arachidi (Pre-Workout)",
+          "description": "1 Fetta pane tostato + 10g Burro d'Arachidi + 10g Marmellata",
+          "ingredients": [
+            {
+              "name": "Pane Toast",
+              "amount": 25,
+              "unit": "g"
+            },
+            {
+              "name": "Burro d'Arachidi",
+              "amount": 10,
+              "unit": "g"
+            },
+            {
+              "name": "Marmellata",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_am",
+          "condition": "training",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l1_m",
+          "name": "Legumi e Verdure (Michael)",
+          "description": "240g Legumi sgocciolati + 300g Verdure di stagione. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Ceci/Fagioli/Lenticchie",
+              "amount": 240,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l1_j",
+          "name": "Legumi e Verdure (Jessica)",
+          "description": "240g Legumi + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Ceci/Fagioli/Lenticchie",
+              "amount": 240,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l2_m",
+          "name": "Pasta/Riso/Cereali (Michael)",
+          "description": "80g Pasta/Riso/Farro/Orzo + 100g Passata/Verdure. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Pasta/Riso/Farro/Orzo",
+              "amount": 80,
+              "unit": "g"
+            },
+            {
+              "name": "Passata di Pomodoro",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l2_j",
+          "name": "Pasta/Riso/Cereali (Jessica)",
+          "description": "60g Pasta/Riso/Farro/Orzo + 100g Passata/Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pasta/Riso/Farro/Orzo",
+              "amount": 60,
+              "unit": "g"
+            },
+            {
+              "name": "Passata di Pomodoro",
+              "amount": 100,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_pollo",
+          "name": "Petto di Pollo e Verdure (Michael)",
+          "description": "200g Petto di Pollo + 50g Pane + 300g Verdure. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_pollo",
+          "name": "Petto di Pollo e Verdure (Jessica)",
+          "description": "200g Petto di Pollo + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_tacchino",
+          "name": "Fesa di Tacchino e Verdure (Michael)",
+          "description": "200g Fesa di Tacchino + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Fesa di Tacchino",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_tacchino",
+          "name": "Fesa di Tacchino e Verdure (Jessica)",
+          "description": "200g Fesa di Tacchino + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Fesa di Tacchino",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_bresaola",
+          "name": "Bresaola e Verdure (Michael)",
+          "description": "150g Bresaola + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Bresaola",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_bresaola",
+          "name": "Bresaola e Verdure (Jessica)",
+          "description": "150g Bresaola + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Bresaola",
+              "amount": 150,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l3_m_merluzzo",
+          "name": "Merluzzo e Verdure (Michael)",
+          "description": "250g Merluzzo + 50g Pane + 300g Verdure.",
+          "ingredients": [
+            {
+              "name": "Merluzzo/Nasello",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l3_j_merluzzo",
+          "name": "Merluzzo e Verdure (Jessica)",
+          "description": "250g Merluzzo + 50g Pane + 300g Verdure + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Merluzzo/Nasello",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l_minestra_m",
+          "name": "Minestra calda di Verdure (Michael)",
+          "description": "Passato o minestra di verdura (300g) + 50g Pane. NO OLIO.",
+          "ingredients": [
+            {
+              "name": "Verdura di Stagione (Zuppa)",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "l_minestra_j",
+          "name": "Minestra calda di Verdure (Jessica)",
+          "description": "Passato o minestra di verdura (300g) + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Verdura di Stagione (Zuppa)",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "lunch",
+          "condition": "always",
+          "season": "winter",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_pollo",
+          "name": "Pollo alla Piastra (Michael)",
+          "description": "200g Pollo + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_pollo",
+          "name": "Pollo alla Piastra (Jessica)",
+          "description": "200g Pollo + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Petto di Pollo",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_manzo",
+          "name": "Tagliata di Manzo (Michael)",
+          "description": "200g Manzo + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Manzo Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_manzo",
+          "name": "Tagliata di Manzo (Jessica)",
+          "description": "200g Manzo + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Manzo Magro",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_m_salmone",
+          "name": "Salmone (Michael)",
+          "description": "200g Salmone + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Salmone",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_m_pesce_bianco",
+          "name": "Pesce Bianco (Michael)",
+          "description": "250g Pesce Bianco (Orata, Merluzzo, Spigola) + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pesce Bianco / Merluzzo",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d1_j_salmone",
+          "name": "Salmone (Jessica)",
+          "description": "200g Salmone + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Salmone",
+              "amount": 200,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d1_j_pesce_bianco",
+          "name": "Pesce Bianco (Jessica)",
+          "description": "250g Pesce Bianco (Orata, Merluzzo, Spigola) + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Pesce Bianco / Merluzzo",
+              "amount": 250,
+              "unit": "g"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d_uova_m",
+          "name": "Uova (Michael)",
+          "description": "3 Uova + 300g Verdure + 50g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Uova",
+              "amount": 3,
+              "unit": "pz"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 50,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael"
+          ]
+        },
+        {
+          "id": "d_uova_j",
+          "name": "Uova (Jessica)",
+          "description": "2 Uova + 300g Verdure + 30g Pane + 10g Olio.",
+          "ingredients": [
+            {
+              "name": "Uova",
+              "amount": 2,
+              "unit": "pz"
+            },
+            {
+              "name": "Verdura di Stagione",
+              "amount": 300,
+              "unit": "g"
+            },
+            {
+              "name": "Pane",
+              "amount": 30,
+              "unit": "g"
+            },
+            {
+              "name": "Olio EVO",
+              "amount": 10,
+              "unit": "g"
+            }
+          ],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d2",
+          "name": "Social / Pasto Libero (Controllato)",
+          "description": "Cena fuori? Niente alcool/aperitivo. Primo semplice o Secondo di carne magra.",
+          "ingredients": [],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "spm_frutta",
+          "name": "Frutta Fresca",
+          "description": "200g Frutta Fresca di stagione",
+          "ingredients": [
+            {
+              "name": "Frutta di Stagione",
+              "amount": 200,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_pm",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "spm_yogurt",
+          "name": "Yogurt Greco",
+          "description": "150g Yogurt Greco Magro",
+          "ingredients": [
+            {
+              "name": "Yogurt Greco Magro",
+              "amount": 150,
+              "unit": "g"
+            }
+          ],
+          "type": "snack_pm",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "l_suoceri",
+          "name": "Pranzo dai Suoceri 🏠",
+          "description": "Gestisci le porzioni: preferisci proteine e verdure, evita bis e salse pesanti.",
+          "ingredients": [],
+          "type": "lunch",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        },
+        {
+          "id": "d_amici",
+          "name": "Uscita con Amici 🍻",
+          "description": "Scegli opzioni magre, evita fritti e salse. Max 1 calice di vino.",
+          "ingredients": [],
+          "type": "dinner",
+          "condition": "always",
+          "season": "always",
+          "owners": [
+            "Michael",
+            "Jessica"
+          ]
+        }
+      ]
+    }
+  },
+  "manualShoppingItems": [],
+  "activeOffers": [
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa scelta in svizzere di Vitello CONAD Percorso Qualità",
+      "prezzo": "15,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa in arrosto di Vitello CONAD Percorso Qualità",
+      "prezzo": "14,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa posteriore di Vitello CONAD Percorso Qualità",
+      "prezzo": "17,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Lombo di Suino senza osso CONAD Percorso Qualità",
+      "prezzo": "5,40",
+      "unita": "al kg",
+      "note": "In tranci",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Pollo a busto 'Come una volta' CONAD Percorso Qualità",
+      "prezzo": "5,40",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Cotechino Modena IGP CASA MODENA",
+      "prezzo": "4,70",
+      "unita": "500 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Orate fresche CONAD Percorso Qualità",
+      "prezzo": "9,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Trancio di Salmone Superior CONAD Percorso Qualità",
+      "prezzo": "13,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Gamberi Argentini interi (decongelati)",
+      "prezzo": "12,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce (Surgelato)",
+      "prodotto": "Gamberi Argentini interi ALBATROS",
+      "prezzo": "9,90",
+      "unita": "800 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce (Scatoletta)",
+      "prodotto": "Tonno NOSTROMO all'olio di oliva",
+      "prezzo": "2,99",
+      "unita": "70 g x4",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Patate di Bologna DOP della Sila IGP CONAD PQ",
+      "prezzo": "1,99",
+      "unita": "1,5 kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Pomodoro ciliegino CONAD Percorso Qualità",
+      "prezzo": "1,59",
+      "unita": "500 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Spinaci CONAD Percorso Qualità",
+      "prezzo": "1,79",
+      "unita": "500 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura (Surgelata)",
+      "prodotto": "Spinaci Cubello OROGEL",
+      "prezzo": "1,99",
+      "unita": "900 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura (Surgelata)",
+      "prodotto": "Pisellini Primavera FINDUS",
+      "prezzo": "3,59",
+      "unita": "700 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Arance Navel CONAD Percorso Qualità (sfuse)",
+      "prezzo": "1,79",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Mele Golden SAPORI&DINTORNI CONAD (sfuse)",
+      "prezzo": "1,79",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Clementine con foglia (sfuse)",
+      "prezzo": "1,99",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Avocado SAPORI&IDEE CONAD",
+      "prezzo": "1,49",
+      "unita": "220 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Yogurt",
+      "prodotto": "Yogurt Bianco CONAD (magro 0% di grassi)",
+      "prezzo": "0,99",
+      "unita": "500 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Ricotta SANTA LUCIA GALBANI",
+      "prezzo": "1,19",
+      "unita": "250 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Ricotta Delizia di Latte CONAD",
+      "prezzo": "7,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Parmigiano Reggiano DOP CONAD (18 mesi)",
+      "prezzo": "18,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Mozzarella SANTA LUCIA GALBANI",
+      "prezzo": "2,99",
+      "unita": "125 g x3",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Bocconcini di Mozzarella di Bufala Campana DOP",
+      "prezzo": "3,39",
+      "unita": "270 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini/Formaggi",
+      "prodotto": "Robiola CONAD",
+      "prezzo": "1,99",
+      "unita": "100 g x2",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa posteriore di bovino adulto Scottona Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "note": "Percorso Qualità",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Pollo 'Come una volta'",
+      "prezzo": "6,90",
+      "unita": "al kg",
+      "note": "Allevato senza uso di antibiotici",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Tartare di Scottona Sapori&Idee Conad",
+      "prezzo": "4,90",
+      "unita": "210 g",
+      "note": "105 g x 2",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Prosciutto di Parma DOP (min. 24 mesi)",
+      "prezzo": "31,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Culatello di Zibello DOP",
+      "prezzo": "54,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Arista di suino farcita delicata",
+      "prezzo": "9,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di Salmone Superior Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "note": "Allevato Senza Uso Di Antibiotici",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Astice Americano",
+      "prezzo": "29,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Branzino (Allevato in mare Adriatico)",
+      "prezzo": "17,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Gambero Argentino Selvaggio Sapori&Idee Conad",
+      "prezzo": "6,90",
+      "unita": "400 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Tartare di tonno Sapori&Idee Conad",
+      "prezzo": "4,50",
+      "unita": "100 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Vongole dell’Adriatico al naturale con guscio",
+      "prezzo": "4,49",
+      "unita": "450 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Radicchio Rosso di Treviso IGP Tardivo",
+      "prezzo": "3,49",
+      "unita": "350 g",
+      "note": "Percorso Qualità",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Pomodoro il Camone Sapori&Dintorni Conad",
+      "prezzo": "1,59",
+      "unita": "300 g",
+      "note": "Percorso Qualità",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Legumi o Cereali Italiani (Fagioli, Ceci, Farro)",
+      "prezzo": "1,49",
+      "unita": "300 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Frutta esotica Sapori&Idee Conad (Mango nel ricettario)",
+      "prezzo": "N/D",
+      "unita": "N/D",
+      "sconto": "20%",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Mozzarella di Bufala Campana DOP",
+      "prezzo": "5,90",
+      "unita": "500 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Ricotta di Bufala Campana DOP",
+      "prezzo": "1,49",
+      "unita": "250 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Gorgonzola DOP Piccante Sapori&Dintorni Conad",
+      "prezzo": "13,50",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Parmigiano Reggiano DOP (min. 30 mesi)",
+      "prezzo": "22,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Burrata di Bufala Sapori&Dintorni Conad",
+      "prezzo": "1,69",
+      "unita": "125 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Squacquerone di Romagna DOP",
+      "prezzo": "2,69",
+      "unita": "280 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Gorgonzola DOP Piccante Sapori&Dintorni Conad",
+      "prezzo": "13,50",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Tartare di Scottona Sapori&Idee Conad",
+      "prezzo": "4,90",
+      "unita": "210 g (105 g x 2)",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Mozzarella di Bufala Campana DOP Sapori&Dintorni Conad",
+      "prezzo": "5,90",
+      "unita": "500 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Ricotta di Bufala Campana DOP Sapori&Dintorni Conad",
+      "prezzo": "1,49",
+      "unita": "250 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Squacquerone di Romagna DOP Sapori&Dintorni Conad",
+      "prezzo": "2,69",
+      "unita": "280 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Parmigiano Reggiano DOP Sapori&Dintorni Conad (min. 30 mesi)",
+      "prezzo": "22,90",
+      "unita": "al kg circa",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Olive la Bella di Cerignola Sapori&Dintorni Conad (in salamoia)",
+      "prezzo": "1,99",
+      "unita": "550 g (sgocc. 320 g)",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Salmone Affumicato Sockeye Selvaggio dell’Alaska Sapori&Idee Conad",
+      "prezzo": "12,90",
+      "unita": "200 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Tartare di tonno Sapori&Idee Conad",
+      "prezzo": "4,50",
+      "unita": "100 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Code di Gamberi Argentini Sapori&Idee Conad",
+      "prezzo": "5,90",
+      "unita": "300 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Burrata di Bufala Sapori&Dintorni Conad",
+      "prezzo": "1,69",
+      "unita": "125 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di Salmone Superior Conad Percorso Qualità (Senza Antibiotici)",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Branzino (Allevato in mare Adriatico)",
+      "prezzo": "17,90",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpettone di Scottona con Speck Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "6,90",
+      "unita": "500 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Pomodoro il Camone Sapori&Dintorni Conad Percorso Qualità",
+      "prezzo": "1,59",
+      "unita": "300 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Pollo “Come una volta” Conad Percorso Qualità (Senza antibiotici)",
+      "prezzo": "6,90",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Funghi Porcini Sapori&Idee Conad",
+      "prezzo": "3,69",
+      "unita": "200 g - 300 g (a seconda del taglio)",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa posteriore di bovino adulto Scottona Conad Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Mango Percorso Qualità Sapori&Idee Conad",
+      "prezzo": "Variabile",
+      "unita": "Pezzo/Peso variabile",
+      "sconto": "20%",
+      "note": "Sconto applicato alla Frutta Esotica Sapori&Idee Conad",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura/Legumi",
+      "prodotto": "Legumi o Cereali Italiani Sapori&Dintorni Conad (Borlotti, Ceci, Farro, Cannellini)",
+      "prezzo": "1,49",
+      "unita": "300 g",
+      "negozio": "Conad Montefiore"
+    }
+  ],
+  "conadFlyers": [
+    {
+      "url": "https://www.conad.it/assets/common/volantini/cia/v2526p/2526P_NATALE_15_24dic_CONAD_RM.pdf",
+      "lastSync": "2025-12-19T15:00:41.163Z",
+      "label": "Conad Ponte Abbadesse - Buone Feste",
+      "storeId": "008400"
+    },
+    {
+      "url": "https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CnSST_SPF_Catalogo_Natale_1_24dic25.pdf",
+      "lastSync": "2025-12-19T15:01:47.830Z",
+      "label": "Conad Montefiore - Natale dal gusto che incanta",
+      "storeId": "007226"
+    },
+    {
+      "url": "https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CESENA_2528A_NATALE_15DIC_24DIC_WEB.pdf",
+      "lastSync": "2025-12-19T15:01:37.754Z",
+      "label": "Conad Montefiore - BUONE FESTE",
+      "storeId": "007226"
+    },
+    {
+      "url": "https://www.conad.it/assets/common/volantini/cia/v2525c/2525CAR_IdeeRegalo_Bassa_WEB.pdf",
+      "lastSync": "2025-12-19T15:02:15.785Z",
+      "label": "Conad Montefiore - CATALOGO IDEE REGALO 2025",
+      "storeId": "007226"
+    },
+    {
+      "url": "https://www.conad.it/assets/common/volantini/cia/v2525c/2525CAT_Giocattolo_Bassa_WEB.pdf",
+      "lastSync": "2025-12-19T15:02:26.348Z",
+      "label": "Conad Montefiore - CATALOGO GIOCATTOLO 2025",
+      "storeId": "007226"
+    }
+  ]
+}

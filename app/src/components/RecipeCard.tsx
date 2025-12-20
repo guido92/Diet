@@ -1,0 +1,159 @@
+'use client';
+
+import { useState } from 'react';
+import { getRecipeAI } from '@/lib/ai';
+import { toggleMealEaten, rateMeal } from '@/lib/data';
+import { ChefHat, X, ExternalLink, ThumbsUp, ThumbsDown, CheckCircle, Circle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+
+type Props = {
+    mealName: string;
+    description: string;
+    user: 'Michael' | 'Jessica';
+    recipeUrl?: string;
+    imageUrl?: string;
+    // New Props for Feedback
+    eaten?: boolean;
+    rating?: 'up' | 'down';
+    day?: string;
+    type?: string;
+    specificProtein?: string;
+};
+
+export default function RecipeCard({ mealName, description, user, recipeUrl, imageUrl, eaten, rating, day, type, specificProtein }: Props) {
+    const [recipe, setRecipe] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    // Local optimistic UI state (could use useOptimistic in future, simpler for now)
+    // Actually simpler to just rely on props if parent refreshes, but for instant feedback maybe local state?
+    // Let's rely on server revalidate for now, or simple local toggle.
+    // Since page reloads on action, lets just fire and forget.
+
+    const handleAskChef = async () => {
+        setOpen(true);
+        if (recipe) return; // Already loaded
+
+        setLoading(true);
+        try {
+            // Enhance description with specific protein if available
+            const fullDescription = specificProtein ? `${description} (Usa: ${specificProtein})` : description;
+            const result = await getRecipeAI(mealName, fullDescription, user);
+            setRecipe(result);
+        } catch (e) {
+            setRecipe("Scusa, lo chef è in pausa. Riprova dopo.");
+        }
+        setLoading(false);
+    };
+
+    const handleEaten = async () => {
+        if (!day || !type) return;
+        await toggleMealEaten(day, type);
+    };
+
+    const handleRate = async (r: 'up' | 'down') => {
+        if (!day || !type) return;
+        await rateMeal(day, type, r);
+    };
+
+    return (
+        <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                <button
+                    className="btn"
+                    style={{ fontSize: '0.8rem', padding: '6px 12px', background: '#334155', color: 'white' }}
+                    onClick={handleAskChef}
+                >
+                    <ChefHat size={16} style={{ marginRight: '6px' }} />
+                    Chef
+                </button>
+
+                {day && type && (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {/* Eaten Toggle */}
+                        <button onClick={handleEaten} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: eaten ? '#22c55e' : '#64748b' }} title="Hai mangiato questo pasto?">
+                            {eaten ? <CheckCircle size={22} fill="rgba(34, 197, 94, 0.2)" /> : <Circle size={22} />}
+                        </button>
+
+                        {/* Divider */}
+                        <div style={{ width: '1px', height: '16px', background: '#334155' }}></div>
+
+                        {/* Rating */}
+                        <button onClick={() => handleRate('up')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: rating === 'up' ? '#eab308' : '#64748b' }}>
+                            <ThumbsUp size={18} fill={rating === 'up' ? '#eab308' : 'none'} />
+                        </button>
+                        <button onClick={() => handleRate('down')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: rating === 'down' ? '#ef4444' : '#64748b' }}>
+                            <ThumbsDown size={18} fill={rating === 'down' ? '#ef4444' : 'none'} />
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {open && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)', zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+                }}>
+                    <div className="card" style={{ width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+                        <button
+                            onClick={() => setOpen(false)}
+                            style={{ position: 'absolute', top: '10px', right: '10px', background: 'transparent', color: '#94a3b8' }}
+                        >
+                            <X />
+                        </button>
+
+                        <h3 className="title" style={{ fontSize: '1.2rem', paddingRight: '20px' }}>Chef AI 👨‍🍳</h3>
+                        <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>{mealName}</p>
+
+                        {imageUrl && (
+                            <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid #334155' }}>
+                                <img
+                                    src={imageUrl}
+                                    alt={mealName}
+                                    referrerPolicy="no-referrer"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            </div>
+                        )}
+
+                        {recipeUrl && (
+                            <a
+                                href={recipeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    background: '#eab308',
+                                    color: '#000',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 700,
+                                    marginBottom: '1.5rem',
+                                    padding: '12px'
+                                }}
+                            >
+                                <ExternalLink size={18} />
+                                Vedi Ricetta Originale (GialloZafferano)
+                            </a>
+                        )}
+
+                        <div className="markdown-body" style={{ marginTop: '1rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                            {loading ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div className="animate-spin" style={{ display: 'inline-block' }}>🍳</div>
+                                    <p>Sto preparando i consigli per {user}...</p>
+                                </div>
+                            ) : (
+                                <ReactMarkdown>{recipe || ''}</ReactMarkdown>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}

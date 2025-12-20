@@ -1,0 +1,28 @@
+{
+    "name": "Dieta AI Planner",
+    "version": "1.0.0",
+    "slug": "dieta_ai",
+    "description": "Pianificatore Pasti AI per Michael & Jessica",
+    "url": "https://github.com/tuo-repo/dieta",
+    "startup": "application",
+    "boot": "auto",
+    "ports": {
+        "3000/tcp": 3000
+    },
+    "options": {
+        "google_api_key": ""
+    },
+    "schema": {
+        "google_api_key": "str"
+    },
+    "map": [
+        "config:rw"
+    ],
+    "arch": [
+        "aarch64",
+        "amd64",
+        "armhf",
+        "armv7",
+        "i386"
+    ]
+}
