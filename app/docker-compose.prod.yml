@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  diet-app:
+    container_name: diet-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATA_FILE_PATH=/app/data/tracker_data.json
+    volumes:
+      - diet_data:/app/data
+
+volumes:
+  diet_data:
