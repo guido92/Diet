@@ -1,6 +1,12 @@
 version: '3.9'
 
 services:
+  init-perms:
+    image: alpine
+    command: sh -c "mkdir -p /app/data && chown -R 1001:1001 /app/data"
+    volumes:
+      - diet_data:/app/data
+
   diet-app:
     container_name: diet-app
     build:
@@ -14,6 +20,9 @@ services:
       - DATA_FILE_PATH=/app/data/tracker_data.json
     volumes:
       - diet_data:/app/data
+    depends_on:
+      init-perms:
+        condition: service_completed_successfully
 
 volumes:
   diet_data:

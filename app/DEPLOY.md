@@ -27,6 +27,8 @@ This guide explains how to deploy the **Diet App** ("Chef") on your Ubuntu VM us
     *   (Optional) You can also set `NODE_ENV` to `production`.
 8.  Click **Deploy the stack**.
 
+> **Note**: I added an automatic permission fix (`init-perms`) to the stack. If you see another container starting and stopping, that is normal. It ensures the app can write to the data volume.
+
 Wait for the build to complete. It might take a few minutes as it builds the Docker image from source.
 
 **Verification**:
