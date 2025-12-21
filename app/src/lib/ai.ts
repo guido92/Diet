@@ -408,18 +408,22 @@ const CONAD_STORES = [
   { id: '007226', key: 'Lucchi', name: 'Conad Montefiore', url: 'https://www.conad.it/ricerca-negozi/spazio-conad-via-leopoldo-lucchi-525-47521-cesena--007226' }
 ];
 
+const ECCOMI_SOURCE = {
+  name: 'Eccomi Cesena',
+  indexUrl: 'https://www.offertevolantini.it/negozi/eccomi/volantino-offerte',
+  baseUrl: 'https://www.offertevolantini.it'
+};
+
 export async function smartSyncOffersAction(): Promise<{ success: boolean; message: string; count: number }> {
   try {
     const data = await getData();
-
-    // We will accumulate new offers here and only replace if we find something
     let newActiveOffers: ConadOffer[] = [];
-    // Clear FLYERS list to start fresh detection, but keep offers until we have new ones
-    data.conadFlyers = [];
+    data.conadFlyers = []; // Reset source list (or manage better if mixed)
 
     let totalOffers = 0;
     let flyersFound = 0;
 
+    // 1. STANDARD CONAD PDF SYNC
     for (const store of CONAD_STORES) {
       console.log(`Smart Sync: Checking store ${store.name}...`);
       const storePage = await fetch(store.url).then(r => r.text());
@@ -438,7 +442,6 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
         const flyerTitle = titleMatch ? titleMatch[1].split('|')[0].trim() : 'Volantino';
 
         // Match URLs that look like PDFs in the Conad assets
-        // This regex is more robust: it looks for .pdf and stops at the first delimiter
         const pdfMatches = viewerPage.match(/https:\/\/www\.conad\.it\/assets\/common\/volantini\/cia\/[^\s"'>]+\.pdf(?:\?[^\s"'>\/]+)?/g);
 
         if (pdfMatches && pdfMatches[0]) {
@@ -495,7 +498,6 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
               if (typeof pdf === 'function') {
                 const pdfData = await pdf(buffer);
                 const textLen = pdfData.text ? pdfData.text.length : 0;
-                console.log(`EXTRACTED_TEXT_DEBUG: URL=${pdfUrl} LEN=${textLen}`);
 
                 if (textLen < 200) {
                   console.warn(`SKIP: Text mostly empty for ${pdfUrl}. Possible Image PDF.`);
@@ -503,15 +505,13 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
                 }
 
                 const offers = await extractOffersAI(pdfData.text, store.name);
-                console.log(`AI_OFFERS_DEBUG: Found ${offers.length} offers for ${store.name}`);
 
                 if (offers && offers.length > 0) {
                   newActiveOffers = [...newActiveOffers, ...offers];
                   totalOffers += offers.length;
                 }
 
-                // THROTTLING to avoid Rate Limit (429)
-                console.log('Throttling... waiting 6s before next PDF...');
+                // THROTTLING
                 await new Promise(r => setTimeout(r, 6000));
 
               } else {
@@ -527,6 +527,36 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       }
     }
 
+    // ============================================================
+    // 2. ECCOMI WEB FLYER SYNC (New Logic)
+    // ============================================================
+    console.log(`Smart Sync: Checking ${ECCOMI_SOURCE.name}...`);
+    try {
+      const indexHtml = await fetch(ECCOMI_SOURCE.indexUrl).then(r => r.text());
+      const flyerMatch = indexHtml.match(/\/visualizza\/offerte\/volantino-[^"']+/);
+
+      if (flyerMatch) {
+        const flyerUrl = `${ECCOMI_SOURCE.baseUrl}${flyerMatch[0]}`;
+        console.log(`Found Eccomi Flyer: ${flyerUrl}`);
+
+        const webOffers = await processWebViewerAction(flyerUrl, 'Eccomi Cesena');
+
+        if (webOffers.length > 0) {
+          newActiveOffers = [...newActiveOffers, ...webOffers];
+          totalOffers += webOffers.length;
+          data.conadFlyers.push({
+            url: flyerUrl,
+            lastSync: new Date().toISOString(),
+            label: 'Eccomi Cesena (Web)',
+            storeId: 'eccomi-cesena'
+          });
+          flyersFound++;
+        }
+      }
+    } catch (err: any) {
+      console.error('Eccomi Sync Failed:', err);
+    }
+
     if (totalOffers > 0) {
       data.activeOffers = newActiveOffers;
       await saveData(data);
@@ -536,12 +566,9 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
         count: totalOffers
       };
     } else {
-      // If we found NO offers, maybe keep the old ones to be safe?
-      // But we still save the new flyers list.
       await saveData(data);
       return { success: false, message: 'Non ho trovato nuove offerte valide (mantenute le precedenti se presenti).', count: data.activeOffers.length };
     }
-    return { success: false, message: 'Non ho trovato nuovi volantini validi al momento.', count: 0 };
   } catch (error) {
     console.error('Smart Sync Error:', error);
     return { success: false, message: 'Errore durante la sincronizzazione automatica.', count: 0 };
@@ -585,6 +612,99 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
   } catch (error) {
     console.error('Flyer Processing Error:', error);
     return { success: false, message: 'Errore nel caricamento del volantino PDF.', count: 0 };
+  }
+}
+
+
+
+/**
+ * Scrapes a Web Viewer (images) and uses Multimodal AI.
+ */
+async function processWebViewerAction(url: string, storeName: string): Promise<ConadOffer[]> {
+  try {
+    console.log(`Scraping Web Viewer: ${url}`);
+    const html = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    }).then(r => r.text());
+
+    // EXTRACT IMAGE URLs (Naive scrape of all JPGs served from CDN)
+    // We look for the 'img.offers-cdn.net/...' pattern
+    const regex = /https:\/\/img\.offers-cdn\.net\/[a-zA-Z0-9\/\.\-_]+\.jpg/g;
+    const matches = html.match(regex);
+
+    if (!matches || matches.length === 0) {
+      console.log('No images found in web viewer.');
+      return [];
+    }
+
+    // De-duplicate and filter (maybe top 10 unique large images?)
+    // Often these sites have thumbnails and full res. We try to grab them all 
+    // and let AI sort it, or check for size indicators in URL if possible.
+    const uniqueImages = Array.from(new Set(matches)).slice(0, 8); // Limit to first 8 pages to save tokens/time
+
+    console.log(`Found ${uniqueImages.length} images. Analyzing with Gemini Vision...`);
+
+    // Download Images
+    const imageBuffers: Buffer[] = [];
+    for (const imgUrl of uniqueImages) {
+      try {
+        const buff = await fetch(imgUrl).then(r => r.arrayBuffer());
+        imageBuffers.push(Buffer.from(buff));
+      } catch (e) {
+        console.error(`Failed to download image ${imgUrl}`);
+      }
+    }
+
+    if (imageBuffers.length === 0) return [];
+
+    return await extractOffersFromImagesAI(imageBuffers, storeName);
+
+  } catch (e) {
+    console.error('Web Viewer Scraping Error:', e);
+    return [];
+  }
+}
+
+async function extractOffersFromImagesAI(images: Buffer[], storeName: string): Promise<ConadOffer[]> {
+  // Gemini 1.5 Flash supports images directly
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  const prompt = `
+    Analizza queste immagini del volantino offerte del negozio "${storeName}".
+    Estrai i prodotti alimentari in offerta (Carne, Pesce, Ortofrutta, Latticini).
+    Ignora: Alcolici, Detersivi, Prodotti per la casa.
+    
+    Restituisci un JSON array:
+    [
+      {
+        "categoria": "Carne" | "Pesce" | "Frutta" | "Verdura" | "Altro",
+        "prodotto": "Nome prodotto",
+        "prezzo": "Prezzo (es. 1.99)",
+        "unita": "€/kg o €/pz",
+        "negozio": "${storeName}"
+      }
+    ]
+  `;
+
+  // Prepare Parts
+  const parts: any[] = [prompt];
+  images.forEach(buff => {
+    parts.push({
+      inlineData: {
+        data: buff.toString('base64'),
+        mimeType: 'image/jpeg'
+      }
+    });
+  });
+
+  try {
+    const result = await model.generateContent(parts);
+    const responseText = result.response.text();
+    const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.error('Gemini Vision Error:', e);
+    return [];
   }
 }
 
