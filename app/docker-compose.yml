@@ -12,3 +12,7 @@ services:
       - DATA_FILE_PATH=/app/data/tracker_data.json
     volumes:
       - ./data:/app/data
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./next.config.ts:/app/next.config.ts
+      - ./package.json:/app/package.json
