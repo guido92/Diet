@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WeeklyPlan, ManualItem, ConadOffer, addManualShoppingItem, removeManualShoppingItem, toggleManualShoppingItem, clearActiveOffers, togglePantryItem } from '@/lib/data';
+import { WeeklyPlan, ManualItem, ConadOffer, addManualShoppingItem, removeManualShoppingItem, toggleManualShoppingItem, clearActiveOffers, togglePantryItem, getSyncStatusAction } from '@/lib/data';
 import { MealOption, getSeasonalFruit, getSeasonalVeg } from '@/lib/guidelines';
 import { CheckSquare, Square, Plus, Trash2, ExternalLink, Zap, Percent, RefreshCcw, Search, Sparkles, ChevronDown, ChevronUp, Package, Share2, Archive } from 'lucide-react';
 import { processFlyerUrlAction, smartSyncOffersAction } from '@/lib/ai';
@@ -179,12 +179,32 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
         setLoading(true);
         try {
             const res = await smartSyncOffersAction();
-            alert(res.message);
+            if (res.success) {
+                // Polling Loop
+                while (true) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    const status = await getSyncStatusAction();
+
+                    if (status.state === 'success') {
+                        alert(status.message);
+                        window.location.reload();
+                        break;
+                    }
+                    if (status.state === 'error') {
+                        alert(`Errore: ${status.message}`);
+                        setLoading(false);
+                        break;
+                    }
+                    // Continue polling if 'running' or 'idle' (assuming running)
+                }
+            } else {
+                alert(res.message);
+                setLoading(false);
+            }
         } catch (e) {
-            alert('Errore durante la sincronizzazione');
+            alert('Errore durante la comunicazione col server.');
+            setLoading(false);
         }
-        setLoading(false);
-        window.location.reload();
     };
 
     const getPackInfo = (name: string, amount: number, subItems?: Record<string, number>) => {

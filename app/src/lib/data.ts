@@ -177,6 +177,11 @@ export type AppData = {
     conadFlyers: FlyerInfo[];
     activeOffers: ConadOffer[];
     lastOfferUpdate?: string;
+    syncStatus?: {
+        state: 'idle' | 'running' | 'success' | 'error';
+        message: string;
+        lastUpdate: number;
+    };
 };
 
 // ... existing code ...
@@ -214,6 +219,7 @@ const DEFAULT_DATA: AppData = {
         { url: 'https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CESENA_2528A_NATALE_15DIC_24DIC_WEB.pdf', lastSync: '', label: 'Spazio Conad Lucchi (Natale)', storeId: '007226' }
     ],
     activeOffers: [],
+    syncStatus: { state: 'idle', message: '', lastUpdate: 0 }
 };
 
 export async function togglePantryItem(item: string) {
@@ -265,6 +271,7 @@ export async function getData(): Promise<AppData> {
         if (!data.manualShoppingItems) data.manualShoppingItems = [];
         if (!data.activeOffers) data.activeOffers = [];
         if (!data.conadFlyers) data.conadFlyers = [];
+        if (!data.syncStatus) data.syncStatus = { state: 'idle', message: '', lastUpdate: 0 };
 
         // Force update guidelines to match latest code definitions
         data.users.Michael.guidelines = GUIDELINES;
@@ -275,6 +282,12 @@ export async function getData(): Promise<AppData> {
         await saveData(DEFAULT_DATA);
         return DEFAULT_DATA;
     }
+}
+
+export async function getSyncStatusAction() {
+    const data = await getData();
+    // Return a subset or just the status to be safe/lightweight
+    return data.syncStatus || { state: 'idle', message: '', lastUpdate: 0 };
 }
 
 export async function saveData(data: AppData): Promise<void> {

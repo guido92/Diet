@@ -415,164 +415,119 @@ const ECCOMI_SOURCE = {
 };
 
 export async function smartSyncOffersAction(): Promise<{ success: boolean; message: string; count: number }> {
+  // 1. Set Status to RUNNING immediately
   try {
     const data = await getData();
-    let newActiveOffers: ConadOffer[] = [];
-    data.conadFlyers = []; // Reset source list (or manage better if mixed)
-
-    let totalOffers = 0;
-    let flyersFound = 0;
-
-    // 1. STANDARD CONAD PDF SYNC
-    for (const store of CONAD_STORES) {
-      console.log(`Smart Sync: Checking store ${store.name}...`);
-      const storePage = await fetch(store.url).then(r => r.text());
-
-      const flyerLinks = storePage.match(/\/volantini\/cia-[^"'\s<>]+/g);
-      if (!flyerLinks) continue;
-
-      const uniqueLinks = Array.from(new Set(flyerLinks));
-
-      for (const link of uniqueLinks) {
-        const viewerUrl = link.startsWith('http') ? link : `https://www.conad.it${link}`;
-        const viewerPage = await fetch(viewerUrl).then(r => r.text());
-
-        // Extract title
-        const titleMatch = viewerPage.match(/<title>([^<]+)<\/title>/i);
-        const flyerTitle = titleMatch ? titleMatch[1].split('|')[0].trim() : 'Volantino';
-
-        // Match URLs that look like PDFs in the Conad assets
-        const pdfMatches = viewerPage.match(/https:\/\/www\.conad\.it\/assets\/common\/volantini\/cia\/[^\s"'>]+\.pdf(?:\?[^\s"'>\/]+)?/g);
-
-        if (pdfMatches && pdfMatches[0]) {
-          const pdfUrl = pdfMatches[0].replace(/\\u0026/g, '&');
-
-          // Blacklist di URL sicuramente inutili per la spesa
-          const IGNORED_KEYWORDS = [
-            'CONAD_PAY', 'CaseCura', 'viaggi', 'assicurazioni', 'accumulo',
-            'manuale', 'regolamento', 'flyer_scelte_stagione', 'distributore',
-            'A4_Mipremio', 'A4_HeyCND', 'WEB_Leaflet_CaseCura', 'scelte_stagione', 'A4_Distributore'
-          ];
-
-          if (IGNORED_KEYWORDS.some(k => pdfUrl.includes(k))) {
-            console.log(`SKIP IRRELEVANT PDF: ${pdfUrl}`);
-            continue;
-          }
-
-          if (pdfUrl.includes('/renditions/') || pdfUrl.includes('/thumbs/') || pdfUrl.toLowerCase().endsWith('.webp')) {
-            console.log(`Skipping non-pdf URL: ${pdfUrl}`);
-            continue;
-          }
-
-          // Update or Add flyer info
-          const flyerIndex = data.conadFlyers.findIndex(f => f.url === pdfUrl);
-          const flyerInfo = {
-            url: pdfUrl,
-            lastSync: new Date().toISOString(),
-            label: `${store.name} - ${flyerTitle}`,
-            storeId: store.id
-          };
-
-          if (flyerIndex >= 0) {
-            data.conadFlyers[flyerIndex] = flyerInfo;
-          } else {
-            data.conadFlyers.push(flyerInfo);
-          }
-
-          flyersFound++;
-
-          // Parse this flyer immediately using a raw fetch to avoid bot detection issues
-          console.log(`Parsing ${pdfUrl}...`);
-          try {
-            // Mimic a browser to avoid 403 Forbidden on some CDNs
-            const pdfResponse = await fetch(pdfUrl, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/pdf'
-              }
-            });
-
-            if (pdfResponse.ok) {
-              const buffer = Buffer.from(await pdfResponse.arrayBuffer());
-
-              if (typeof pdf === 'function') {
-                const pdfData = await pdf(buffer);
-                const textLen = pdfData.text ? pdfData.text.length : 0;
-
-                if (textLen < 200) {
-                  console.warn(`SKIP: Text mostly empty for ${pdfUrl}. Possible Image PDF.`);
-                  continue;
-                }
-
-                const offers = await extractOffersAI(pdfData.text, store.name);
-
-                if (offers && offers.length > 0) {
-                  newActiveOffers = [...newActiveOffers, ...offers];
-                  totalOffers += offers.length;
-                }
-
-                // THROTTLING
-                await new Promise(r => setTimeout(r, 6000));
-
-              } else {
-                console.error('CRITICAL: pdf-parse is not a function despite check');
-              }
-            } else {
-              console.error(`PDF Fetch Failed: ${pdfUrl} Status: ${pdfResponse.status}`);
-            }
-          } catch (err) {
-            console.error(`Failed to parse PDF ${pdfUrl}:`, err);
-          }
-        }
-      }
-    }
-
-    // ============================================================
-    // 2. ECCOMI WEB FLYER SYNC (New Logic)
-    // ============================================================
-    console.log(`Smart Sync: Checking ${ECCOMI_SOURCE.name}...`);
-    try {
-      const indexHtml = await fetch(ECCOMI_SOURCE.indexUrl).then(r => r.text());
-      const flyerMatch = indexHtml.match(/\/visualizza\/offerte\/volantino-[^"']+/);
-
-      if (flyerMatch) {
-        const flyerUrl = `${ECCOMI_SOURCE.baseUrl}${flyerMatch[0]}`;
-        console.log(`Found Eccomi Flyer: ${flyerUrl}`);
-
-        const webOffers = await processWebViewerAction(flyerUrl, 'Eccomi Cesena');
-
-        if (webOffers.length > 0) {
-          newActiveOffers = [...newActiveOffers, ...webOffers];
-          totalOffers += webOffers.length;
-          data.conadFlyers.push({
-            url: flyerUrl,
-            lastSync: new Date().toISOString(),
-            label: 'Eccomi Cesena (Web)',
-            storeId: 'eccomi-cesena'
-          });
-          flyersFound++;
-        }
-      }
-    } catch (err: any) {
-      console.error('Eccomi Sync Failed:', err);
-    }
-
-    if (totalOffers > 0) {
-      data.activeOffers = newActiveOffers;
-      await saveData(data);
-      return {
-        success: true,
-        message: `Sincronizzazione completata! Trovati ${flyersFound} volantini e ${totalOffers} offerte.`,
-        count: totalOffers
-      };
-    } else {
-      await saveData(data);
-      return { success: false, message: 'Non ho trovato nuove offerte valide (mantenute le precedenti se presenti).', count: data.activeOffers.length };
-    }
-  } catch (error) {
-    console.error('Smart Sync Error:', error);
-    return { success: false, message: 'Errore durante la sincronizzazione automatica.', count: 0 };
+    data.syncStatus = { state: 'running', message: 'Sincronizzazione avviata...', lastUpdate: Date.now() };
+    await saveData(data);
+  } catch (e) {
+    console.error('Failed to set sync status:', e);
+    return { success: false, message: 'Errore avvio sync', count: 0 };
   }
+
+  // 2. Start Background Logic (Floating Promise)
+  (async () => {
+    try {
+      console.log('--- START BACKGROUND SYNC ---');
+      const data = await getData(); // Re-fetch mostly safe
+
+      let newActiveOffers: ConadOffer[] = [];
+      data.conadFlyers = [];
+
+      let totalOffers = 0;
+      let flyersFound = 0;
+
+      // 1. STANDARD CONAD PDF SYNC
+      for (const store of CONAD_STORES) {
+        console.log(`Smart Sync: Checking store ${store.name}...`);
+        const storePage = await fetch(store.url).then(r => r.text());
+        const flyerLinks = storePage.match(/\/volantini\/cia-[^"'\s<>]+/g);
+        if (!flyerLinks) continue;
+
+        const uniqueLinks = Array.from(new Set(flyerLinks));
+        for (const link of uniqueLinks) {
+          const viewerUrl = link.startsWith('http') ? link : `https://www.conad.it${link}`;
+          const viewerPage = await fetch(viewerUrl).then(r => r.text());
+          const titleMatch = viewerPage.match(/<title>([^<]+)<\/title>/i);
+          const flyerTitle = titleMatch ? titleMatch[1].split('|')[0].trim() : 'Volantino';
+
+          const pdfMatches = viewerPage.match(/https:\/\/www\.conad\.it\/assets\/common\/volantini\/cia\/[^\s"'>]+\.pdf(?:\?[^\s"'>\/]+)?/g);
+
+          if (pdfMatches && pdfMatches[0]) {
+            const pdfUrl = pdfMatches[0].replace(/\\u0026/g, '&');
+            const IGNORED_KEYWORDS = ['CONAD_PAY', 'CaseCura', 'viaggi', 'assicurazioni', 'manuale', 'regolamento', 'flyer_scelte_stagione', 'distributore', 'A4_Mipremio', 'A4_HeyCND', 'WEB_Leaflet_CaseCura', 'scelte_stagione', 'A4_Distributore'];
+            if (IGNORED_KEYWORDS.some(k => pdfUrl.includes(k))) continue;
+            if (pdfUrl.includes('/renditions/') || pdfUrl.includes('/thumbs/') || pdfUrl.toLowerCase().endsWith('.webp')) continue;
+
+            const flyerInfo = { url: pdfUrl, lastSync: new Date().toISOString(), label: `${store.name} - ${flyerTitle}`, storeId: store.id };
+            data.conadFlyers.push(flyerInfo);
+            flyersFound++;
+
+            // Parse
+            console.log(`Parsing PDF ${pdfUrl}...`);
+            try {
+              const pdfResponse = await fetch(pdfUrl, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', 'Accept': 'application/pdf' }
+              });
+              if (pdfResponse.ok) {
+                const buffer = Buffer.from(await pdfResponse.arrayBuffer());
+                if (typeof pdf === 'function') {
+                  const pdfData = await pdf(buffer);
+                  if (pdfData.text && pdfData.text.length > 200) {
+                    const offers = await extractOffersAI(pdfData.text, store.name);
+                    if (offers && offers.length > 0) {
+                      newActiveOffers = [...newActiveOffers, ...offers];
+                      totalOffers += offers.length;
+                    }
+                  }
+                }
+              }
+            } catch (err) { console.error('PDF Parse Error', err); }
+            // Throttle
+            await new Promise(r => setTimeout(r, 6000));
+          }
+        }
+      }
+
+      // 2. ECCOMI SYNC
+      console.log(`Smart Sync: Checking ${ECCOMI_SOURCE.name}...`);
+      try {
+        const indexHtml = await fetch(ECCOMI_SOURCE.indexUrl).then(r => r.text());
+        const flyerMatch = indexHtml.match(/\/visualizza\/offerte\/volantino-[^"']+/);
+        if (flyerMatch) {
+          const flyerUrl = `${ECCOMI_SOURCE.baseUrl}${flyerMatch[0]}`;
+          console.log(`Found Eccomi Flyer: ${flyerUrl}`);
+          const webOffers = await processWebViewerAction(flyerUrl, 'Eccomi Cesena');
+          if (webOffers.length > 0) {
+            newActiveOffers = [...newActiveOffers, ...webOffers];
+            totalOffers += webOffers.length;
+            data.conadFlyers.push({ url: flyerUrl, lastSync: new Date().toISOString(), label: 'Eccomi Cesena (Web)', storeId: 'eccomi-cesena' });
+            flyersFound++;
+          }
+        }
+      } catch (e) { console.error('Eccomi fail', e); }
+
+      // SAVE SUCCESS
+      const finalData = await getData(); // Re-read to be safe
+      finalData.conadFlyers = data.conadFlyers;
+      if (totalOffers > 0) {
+        finalData.activeOffers = newActiveOffers;
+        finalData.syncStatus = { state: 'success', message: `Finito! Trovati ${flyersFound} volantini e ${totalOffers} offerte.`, lastUpdate: Date.now() };
+      } else {
+        finalData.syncStatus = { state: 'success', message: 'Nessuna nuova offerta trovata (mantenute precedenti).', lastUpdate: Date.now() };
+      }
+      await saveData(finalData);
+      console.log('--- BACKGROUND SYNC FINISHED ---');
+
+    } catch (bgError: any) {
+      console.error('--- BACKGROUND SYNC ERROR ---', bgError);
+      const errData = await getData();
+      errData.syncStatus = { state: 'error', message: 'Errore durante la sincronizzazione.', lastUpdate: Date.now() };
+      await saveData(errData);
+    }
+  })();
+
+  return { success: true, message: 'Ricerca Offerte avviata in background... Torna tra poco!', count: 0 };
 }
 
 export async function processFlyerUrlAction(url: string): Promise<{ success: boolean; message: string; count: number }> {
