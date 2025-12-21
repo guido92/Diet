@@ -19,6 +19,9 @@ services:
       - NODE_ENV=production
       - DATA_FILE_PATH=/app/data/tracker_data.json
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - diet_data:/app/data
     depends_on:
