@@ -1,18 +1,29 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  meal-planner:
-    build: .
-    container_name: meal-planner
+  init-perms:
+    image: alpine
+    command: sh -c "mkdir -p /app/data && chown -R 1001:1001 /app/data"
+    volumes:
+      - diet_data:/app/data
+
+  diet-app:
+    container_name: diet-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - NODE_ENV=production
       - DATA_FILE_PATH=/app/data/tracker_data.json
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     volumes:
-      - ./data:/app/data
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./next.config.ts:/app/next.config.ts
-      - ./package.json:/app/package.json
+      - diet_data:/app/data
+    depends_on:
+      init-perms:
+        condition: service_completed_successfully
+
+volumes:
+  diet_data:

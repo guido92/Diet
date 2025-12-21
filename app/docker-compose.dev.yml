@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  meal-planner:
+    build: .
+    container_name: meal-planner
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DATA_FILE_PATH=/app/data/tracker_data.json
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./next.config.ts:/app/next.config.ts
+      - ./package.json:/app/package.json
