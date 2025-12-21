@@ -75,94 +75,69 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
   const user = targetUser || data.currentUser;
   const userGuidelines = data.users[user].guidelines;
   const activeOffers = data.activeOffers || [];
+  const pantryItems = data.pantryItems || []; // Fetch Pantry
   const seasonalFruit = getSeasonalFruit();
   const seasonalVeg = getSeasonalVeg();
 
-  console.log(`Generating plan for ${user} considering ${activeOffers.length} current offers...`);
+  console.log(`Generating plan for ${user} considering ${activeOffers.length} offers and ${pantryItems.length} pantry items...`);
 
   const prompt = `
-      Sei un assistente nutrizionista rigoroso. Devi generare un piano settimanale di 7 giorni per ${user} seguendo le Linee Guida.
-      Linee guida disponibili(VINCOLANTI): ${JSON.stringify(userGuidelines)}
-      Offerte correnti al Conad(OPZIONALI): ${JSON.stringify(activeOffers)}
+      Sei un assistente nutrizionista e Chef stellato ("Chef Zero Sprechi").
+      Devi generare un piano settimanale di 7 giorni per ${user}.
       
-      Lista Frutta di Stagione(DA CUI SCEGLIERE): ${JSON.stringify(seasonalFruit)}
-      Lista Verdura di Stagione(DA CUI SCEGLIERE): ${JSON.stringify(seasonalVeg)}
+      OBIETTIVI:
+      1. Rispettare le Linee Guida (Calorie/Macro).
+      2. **MINIMIZZARE GLI SPRECHI**: Usa PRIORITARIAMENTE gli ingredienti in Dispensa.
+      3. **RISPARMIARE**: Usa le Offerte del supermercato.
+      4. **GUSTO**: Mai piatti tristi. Se è dieta, deve sembrare gourmet.
+
+      DATI A DISPOSIZIONE:
+      - Linee Guida (VINCOLANTI): ${JSON.stringify(userGuidelines)}
+      - **DISPENSA (COSA ABBIAMO IN CASA - USARE PRIMA DI TUTTO)**: ${JSON.stringify(pantryItems)}
+      - Offerte Volantino (OPZIONALI MA CONSIGLIATE): ${JSON.stringify(activeOffers)}
+      - Frutta Stagione: ${JSON.stringify(seasonalFruit)}
+      - Verdura Stagione: ${JSON.stringify(seasonalVeg)}
       
-      REGOLE FONDAMENTALI(DA RISPETTARE AL 100 %):
-  1. ** DIETA RIGIDA **: ${user} è a dieta.Niente sgarri non previsti.
-      2. ** ORARI SACRI **:
-         - ** LUNEDÌ - VENERDÌ **: SOLO pasti sani da dieta(NO \`l_suoceri\`, NO \`d_amici\`, NO \`d2\`). 
-            > È VIETATO inserire pranzi dai suoceri o cene fuori in settimana.
-         - **SABATO - DOMENICA**: Concessi ma limitati. 
-            > MAX 1 "Pranzo dai Suoceri" (\`l_suoceri\`) in tutto il weekend.
-            > MAX 1 "Uscita con Amici" (\`d_amici\`) O "Pasto Libero" (\`d2\`) in tutto il weekend.
+      REGOLE FONDAMENTALI:
+      1. **DIETA RIGIDA MA CREATIVA**:
+         - Niente sgarri Lun-Ven.
+         - Sabato/Domenica: Max 1 "Pranzo dai Suoceri" e Max 1 "Cena Libera/Amici".
       
-      3. **COMPATIBILITÀ COPPIA**:
-         - **CENA (Lun-Dom)** e **PRANZO (Sab-Dom)**: Scegli SOLO pasti che hanno \`owners\` che include SIA "Michael" CHE "Jessica". (Mangiano insieme).
-         - **PRANZO (Lun-Ven)**: Scegli pasti dove \`owners\` include "${user}".
-      
-      4. **ALLENAMENTO (Training)**:
+      2. **COMPATIBILITÀ COPPIA**:
+         - CENA (Tutti i giorni) & PRANZO (Weekend): Cibo condiviso (owners include sia Michael che Jessica).
+         - PRANZO (Lun-Ven): Cibo individuale (owners include ${user}).
+
+      3. **ALLENAMENTO**:
          ${user === 'Michael' ?
-      '- **MICHAEL**: Si allena TASSATIVAMENTE e SOLO **Martedì** e **Giovedì**. (Imposta `training: true` martedì/giovedì, `false` altri giorni).' :
-      '- **JESSICA**: Allenamento variabile o riposo.'}
+      '- MICHAEL: Training TRUE solo Martedì e Giovedì. (Riposo gli altri giorni).' :
+      '- JESSICA: Training FALSE (o variabile, ma default false).'}
 
-      5. **CHEF MODE & SPECIFICITÀ TOTALE (CRUCIALE)**:
-         - **BASTA GENERALITÀ**: È VIETATO scrivere solo "Frutta" o "Verdura" generica.
-         - **SELEZIONE OBBLIGATORIA**:
-           > Per OGNI pasto che include verdure, SCEGLI 1 VERDURA SPECIFICA dalla lista fornita (es. "Spinaci").
-           > Per OGNI pasto che include frutta, SCEGLI 1 FRUTTO SPECIFICO dalla lista fornita (es. "Mele").
-           > Inserisci queste scelte nei campi \`specificVeg\` e \`specificFruit\` del JSON.
+      4. **INTELLIGENZA "CHEF MODE" (CRUCIALE)**:
+         - **VIETATO IL GENERICO**:
+           > Se scegli l'ID "sam1" (Frutta) o simili, NON lasciare i dettagli vuoti.
+           > Devi COMPILARE \`specificFruit\` con una scelta reale (es. "Mela Pink Lady", non "Frutta").
+           > Se scegli "Verdura", scrivi "Spinaci al limone", non "Verdura".
+         
+         - **USA LA DISPENSA**:
+           > Se in dispensa c'è "Tonno", cerca di inserire un pasto col Tonno (se le linee guida lo permettono).
+           > Se c'è "Riso", usa il Riso come carboidrato.
+         
+         - **USA LE OFFERTE**:
+           > Se c'è un'offerta sul "Pollo", scrivi "Pollo in offerta" o crea una ricetta ad hoc.
 
-         - **INTEGRAZIONE OFFERTE (SMART SHOPPER)**:
-           > Analizza 'Offerte correnti'. Se un ingrediente della dieta (es. "Carne") corrisponde a un'offerta (es. "Macinato magro"), USA QUELL'OFFERTA per creare la ricetta.
-           > Se l'offerta è una Proteina (es. Orata, Merluzzo, Tacchino), scrivila nel campo \`specificProtein\`.
-           > Sii molto specifico nei nomi dei piatti se usi un'offerta (es. "Orata al forno" se Orata è in offerta).
+         - **NOMING ACCATTIVANTE**:
+           > Nel campo \`lunch_details.name\` o \`dinner_details.name\`, non scrivere solo "Pollo". Scrivi "Tagliata di Pollo al Rosmarino".
+           > Rendi il piano desiderabile!
 
-         - **VARIETÀ CARBOIDRATI (NOIA ZERO)**:
-           > Il 'Pane' NON deve essere l'unico carboidrato.
-           > Se il pasto prevede 'Pane', SOSTITUISCILO nel 40% dei casi con:
-             - Patate (3 volte il peso del pane, es. 50g pane -> 150g patate).
-             - Cereali (Riso, Farro, Orzo) o Gallette.
-           > Scrivi la sostituzione nel campo \`specificCarb\` (es. "Patate al forno", "Riso Basmati").
-
-          - **ABBINAMENTI DI GUSTO (ARMONIA)**:
-            > Lo Chef deve avere GUSTO. Evita abbinamenti che stonano.
-            > **Pesce Bianco/Salmone**: Abbina con verdure delicate (Zucchine, Fagiolini, Patate, Pomodorini, Finocchi).
-              - **VIETATO**: Pesce con Radicchio o Cavoli amari (Disgustoso!).
-            > **Carne Rossa**: Abbina con verdure decise (Radicchio, Spinaci, Funghi, Rucola).
-            > **Uova**: Abbina con Asparagi, Zucchine, Spinaci.
-            > **Pollo/Tacchino**: Sta bene con tutto, ma varia i colori.
-
-          - **SOCIAL E CHIACCHIERE (TIPS SALUTARI)**:
-            > Se il pasto è LIBERO o SOCIALE (\`d2\`, \`d_amici\`, \`l_suoceri\`), non lasciare vuoto.
-            > Scrivi un consiglio simpatico e utile nel campo 'recipe':
-              - "Pizza Stasera? 🍕 Provala con verdure grigliate o Salsiccia e Friarielli (senza esagerare col bordo)."
-              - "Sushi? 🍣 Punta su Sashimi e Tartare, limita Rolls fritti e salse dolci."
-              - "Pub/Burger? 🍔 Meglio senza bacon, abbonda con insalata e pomodoro."
-              - "Dai Suoceri? 🍝 Goditi la pasta ma evita il tris di dolci!"
-            > Rendi il consiglio specifico per il giorno (es. Venerdì -> probabile Sushi/Pub, Sabato -> Pizza).
-
-         - **VARIETÀ PASTA & CEREALI**:
-           > Se il pasto è 'l2' (Pasta/Riso), ALTERNA i formati e i cereali.
-           > Scrivi sempre il condimento (es. "Spaghetti aglio olio e peperoncino" se olio permesso).
-
-         - **Dettagli (_details)**:
-           > Compila SEMPRE i campi '_details' per ogni pasto (colazione inclusa).
-           > Usa nomi di piatti reali e invitanti.
-
-      6. **OUTPUT JSON (STRUTTURA OBBLIGATORIA)**:
-         Restituisci SOLO il JSON raw del piano settimanale (WeeklyPlan).
-         Struttura: 
+      5. **STRUTTURA JSON OUTPUT**:
+         Restituisci SOLO un JSON valido (WeeklyPlan).
+         Format:
          { 
            "Monday": { 
-             "breakfast": "id...", "breakfast_details": { "name": "...", "recipe": "...", "specificFruit": "Mela", "specificVeg": "" },
-             "snack_am": "id...", "snack_am_details": { "name": "...", "recipe": "...", "specificFruit": "Kiwi" },
-             "lunch": "id...", "lunch_details": { "name": "...", "recipe": "...", "specificVeg": "Broccoli", "specificProtein": "Petto di Pollo", "specificCarb": "Riso Venere" },
-             "snack_pm": "id...", "snack_pm_details": { "name": "...", "recipe": "..." },
-             "dinner": "id...", "dinner_details": { "name": "...", "recipe": "...", "specificVeg": "Spinaci", "specificProtein": "Orata", "specificCarb": "Patate al Forno" },
-             "training": true/false
-           }, 
-           ... 
+             "breakfast": "id...", "breakfast_details": { "name": "...", "specificFruit": "..." },
+             "lunch": "id...", "lunch_details": { "name": "...", "specificVeg": "...", "specificProtein": "...", "specificCarb": "..." },
+             ...
+           }
          }
   `;
 
@@ -330,6 +305,17 @@ function sanitizePlan(plan: WeeklyPlan, user: string): WeeklyPlan {
         const correctId = mealId.replace(/_j($|_)/, (match) => match.replace('j', 'm'));
         (newPlan[day] as any)[mealKey] = correctId;
         (newPlan[day] as any)[`${mealKey}_details`] = undefined;
+      }
+
+      // Fallback: AI forgot to specify fruit for sam1
+      if (mealId === 'sam1' && !(newPlan[day] as any)[`${mealKey}_details`]?.specificFruit) {
+        const fruit = getSeasonalFruit();
+        const randomFruit = fruit[Math.floor(Math.random() * fruit.length)];
+        if (!(newPlan[day] as any)[`${mealKey}_details`]) {
+          (newPlan[day] as any)[`${mealKey}_details`] = { name: 'Frutta Fresca', specificFruit: randomFruit };
+        } else {
+          (newPlan[day] as any)[`${mealKey}_details`].specificFruit = randomFruit;
+        }
       }
     });
   });
