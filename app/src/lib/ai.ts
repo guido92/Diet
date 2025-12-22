@@ -12,6 +12,7 @@ import { getEccomiFlyerUrl } from './eccomi';
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
+  'gemini-3-flash-preview',  // Experimental (Quota locked?)
   'gemini-2.5-pro',          // Newest PRO
   'gemini-2.5-flash',        // Newest Flash
   'gemini-2.0-flash',        // Stable Fallback
