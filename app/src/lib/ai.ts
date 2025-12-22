@@ -12,21 +12,19 @@ import { getEccomiFlyerUrl } from './eccomi';
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-2.0-flash-exp',    // High Performance
-  'gemini-1.5-pro',          // Reliable Quality
-  'gemini-1.5-flash'         // Fallback
+  'gemini-2.0-flash',        // Stable
+  'gemini-2.0-flash-exp',    // Experimental
 ];
 
 // Team WORKER: High Speed & Quota
 const WORKER_MODELS = [
+  'gemini-2.0-flash-lite-preview-02-05', // Try specific if known, else standard
+  'gemini-2.0-flash',
   'gemini-2.0-flash-exp',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro'
 ];
 
 /**
- * Robust AI Caller with Fallback Rotation
+ * Robust AI Caller with Smart Retry
  */
 async function callGeminiSafe(prompt: string, modelList: string[]): Promise<string> {
   const errors: string[] = [];
@@ -41,7 +39,7 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
 
     try {
       console.log(`[AI ROTATION] Attempt ${i + 1}/${shuffledModels.length}: Using ${modelId}...`);
-      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || ''); // Lazy Load
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
       const model = genAI.getGenerativeModel({ model: modelId });
       const result = await model.generateContent(prompt);
 
@@ -56,21 +54,39 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
         throw e;
       }
 
-      // Check if we should wait or leapfrog
       const isRateLimit = msg.includes('429') || msg.includes('Too Many Requests');
-      const isLast = i === shuffledModels.length - 1;
 
-      if (isRateLimit && !isLast) {
-        console.log(`[AI ROTATION] ⏭️ Rate Limit (429) on ${modelId}. LEAPFROGGING immediately to next model...`);
-        continue; // Try next model immediately
+      // Smart Retry logic
+      if (isRateLimit) {
+        // Extract time: "Please retry in 8.117652176s"
+        const match = msg.match(/retry in ([0-9\.]+)s/);
+        if (match && match[1]) {
+          const seconds = parseFloat(match[1]);
+          // If wait is reasonable (< 60s), wait and retry SAME model
+          if (seconds < 60) {
+            const waitMs = Math.ceil(seconds * 1000) + 1000; // Add 1s safety
+            console.log(`[AI ROTATION] ⏳ Quota Hit. Waiting ${waitMs}ms as requested...`);
+            await new Promise(r => setTimeout(r, waitMs));
+
+            // RETRY ONCE
+            try {
+              console.log(`[AI ROTATION] 🔄 Retrying ${modelId} after wait...`);
+              const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+              const model = genAI.getGenerativeModel({ model: modelId });
+              const result = await model.generateContent(prompt);
+              console.log(`[AI ROTATION] ✅ Success with ${modelId} (after retry)!`);
+              return result.response.text();
+            } catch (retryError: any) {
+              console.warn(`[AI ROTATION] ❌ Retry Failed on ${modelId}. Moving on.`);
+              errors.push(`${modelId} (RETRY): ${retryError.message}`);
+            }
+          }
+        }
       }
 
-      // If it's a rate limit AND it's the last model, we have to wait/fail. 
-      // Or if it's another error (500, 503), we might want a small delay.
-      if (isLast) {
-        console.error(`[AI ROTATION] 💀 All models exhausted.`);
-      } else {
-        // Small delay for non-429 errors just in case
+      // If we are here, either not rate limit, or retry failed, or wait too long.
+      // Small delay before next model to avoid bombarding
+      if (i < shuffledModels.length - 1) {
         await new Promise(r => setTimeout(r, 1000));
       }
     }
@@ -698,9 +714,8 @@ async function processWebViewerAction(url: string, storeName: string): Promise<C
 async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
   if (images.length === 0) return [];
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
-  // 'gemini-1.5-flash' sometimes has versioning issues in beta. Using 'gemini-1.5-flash-latest' or 'gemini-1.5-pro' might be safer.
-  // Updated to 'gemini-1.5-flash-latest' to fix 404 error.
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+  // 2.0 Flash is multimodal and available
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
   const prompt = `
     Analizza queste immagini del volantino "Eccomi".
