@@ -1,7 +1,7 @@
 'use server';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg } from './guidelines';
+import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg, GUIDELINES } from './guidelines';
 import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan } from './data';
 import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
@@ -203,7 +203,37 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
   return sanitizedPlan;
 }
 
-// ... (enrichPlanWithRecipes remains same) ...
+/**
+ * Scrapes GialloZafferano for every Lunch/Dinner meal in the plan.
+ * Modifies the plan in-place.
+ */
+async function enrichPlanWithRecipes(plan: WeeklyPlan) {
+  const days = Object.values(plan);
+
+  // Create a list of tasks to run
+  // We process Lunch and Dinner.
+  for (const day of days) {
+    const mealsToEnrich = [
+      day.lunch_details,
+      day.dinner_details
+    ].filter(m => m && m.name && !m.name.includes('Libera') && !m.name.includes('Suoceri'));
+
+    for (const meal of mealsToEnrich) {
+      if (!meal) continue;
+      // Simple sequential scraping to avoid rate limits/blocks
+      const result = await searchGialloZafferano(meal.name);
+      if (result) {
+        meal.recipeUrl = result.url;
+        meal.imageUrl = result.imageUrl;
+        console.log(`[RECIPE] Found for "${meal.name}": ${result.url}`);
+      } else {
+        console.log(`[RECIPE] Not found for "${meal.name}"`);
+      }
+      // Small delay between requests
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+}
 
 /**
  * Enforces strict rules and OWNERSHIP on ANY plan.
