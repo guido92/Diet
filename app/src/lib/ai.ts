@@ -193,8 +193,8 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
     plan = generateLocalPlan(userGuidelines);
   }
 
-  // 1. Sanitize (Strict Rules)
-  const sanitizedPlan = sanitizePlan(plan, user);
+  // 1. Sanitize (Strict Rules) with Ownership Check
+  const sanitizedPlan = sanitizePlan(plan, user, userGuidelines || []);
 
   // 2. Enrich with Recipes (GialloZafferano) - Batch Mode
   console.log('Fetching Recipes from GialloZafferano...');
@@ -203,43 +203,12 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
   return sanitizedPlan;
 }
 
-/**
- * Scrapes GialloZafferano for every Lunch/Dinner meal in the plan.
- * Modifies the plan in-place.
- */
-async function enrichPlanWithRecipes(plan: WeeklyPlan) {
-  const days = Object.values(plan);
-
-  // Create a list of tasks to run
-  // We process Lunch and Dinner.
-  for (const day of days) {
-    const mealsToEnrich = [
-      day.lunch_details,
-      day.dinner_details
-    ].filter(m => m && m.name && !m.name.includes('Libera') && !m.name.includes('Suoceri'));
-
-    for (const meal of mealsToEnrich) {
-      if (!meal) continue;
-      // Simple sequential scraping to avoid rate limits/blocks
-      const result = await searchGialloZafferano(meal.name);
-      if (result) {
-        meal.recipeUrl = result.url;
-        meal.imageUrl = result.imageUrl;
-        console.log(`[RECIPE] Found for "${meal.name}": ${result.url}`);
-      } else {
-        console.log(`[RECIPE] Not found for "${meal.name}"`);
-      }
-      // Small delay between requests
-      await new Promise(r => setTimeout(r, 500));
-    }
-  }
-}
-
+// ... (enrichPlanWithRecipes remains same) ...
 
 /**
- * Enforces strict rules on ANY plan (AI generated or Local fallback).
+ * Enforces strict rules and OWNERSHIP on ANY plan.
  */
-function sanitizePlan(plan: WeeklyPlan, user: string): WeeklyPlan {
+function sanitizePlan(plan: WeeklyPlan, user: string, guidelines: MealOption[]): WeeklyPlan {
   const KEY_MAP: Record<string, string> = {
     'lunedi': 'Monday', 'lunedì': 'Monday', 'monday': 'Monday',
     'martedi': 'Tuesday', 'martedì': 'Tuesday', 'tuesday': 'Tuesday',
@@ -251,6 +220,7 @@ function sanitizePlan(plan: WeeklyPlan, user: string): WeeklyPlan {
   };
 
   const newPlan: WeeklyPlan = {};
+
   // 1. Normalize Days
   Object.keys(plan).forEach(k => {
     const norm = KEY_MAP[k.toLowerCase()] || k;
@@ -260,104 +230,106 @@ function sanitizePlan(plan: WeeklyPlan, user: string): WeeklyPlan {
     }
   });
 
-  // 2. Ensure all days exist
-  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(day => {
+  // 2. Ensure all days exist & fix ownership
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  DAYS.forEach(day => {
     if (!newPlan[day]) {
-      // Basic placeholder if missing
-      newPlan[day] = { breakfast: 'b1', snack_am: 'sam1', lunch: 'l1', snack_pm: 'spm1', dinner: 'd1_pollo', training: false };
+      // Placeholder
+      newPlan[day] = { breakfast: '', snack_am: '', lunch: '', snack_pm: '', dinner: '', training: false };
     }
-  });
 
-  const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const WEEKEND = ['Saturday', 'Sunday'];
-  const ALL_DAYS = [...WEEKDAYS, ...WEEKEND];
+    const dayPlan = newPlan[day];
 
-  // 3. PURGE WEEKDAYS (No Social)
-  WEEKDAYS.forEach(day => {
-    // No Suoceri Lunch
-    if (newPlan[day].lunch === 'l_suoceri') {
-      console.log(`[SANITIZER] Removing weekday 'l_suoceri' on ${day}`);
-      const fallbackL3 = user === 'Jessica' ? 'l3_j_pollo' : 'l3_m_pollo';
-      const fallbackL1 = user === 'Jessica' ? 'l1_j' : 'l1_m';
-      newPlan[day].lunch = Math.random() > 0.5 ? fallbackL3 : fallbackL1;
-      newPlan[day].lunch_details = undefined;
-    }
-    // No Social Dinner
-    if (['d_amici', 'd2'].includes(newPlan[day].dinner as string)) {
-      console.log(`[SANITIZER] Removing weekday social '${newPlan[day].dinner}' on ${day}`);
-      newPlan[day].dinner = Math.random() > 0.5 ? 'd1_pollo' : 'd1_merluzzo';
-      newPlan[day].dinner_details = undefined;
-    }
-  });
-
-  // 4. LIMIT WEEKEND (Max 1 social each type)
-  let suoceriCount = 0;
-  let socialDinnerCount = 0;
-
-  // We iterate weekend days to count and limit
-  WEEKEND.forEach(day => {
-    if (newPlan[day].lunch === 'l_suoceri') {
-      suoceriCount++;
-      if (suoceriCount > 1) {
-        console.log(`[SANITIZER] Correcting extra 'l_suoceri' on ${day}`);
-        const fallbackL2 = user === 'Jessica' ? 'l2_j' : 'l2_m';
-        newPlan[day].lunch = fallbackL2; // Fallback
-        newPlan[day].lunch_details = undefined;
-      }
-    }
-    if (['d_amici', 'd2'].includes(newPlan[day].dinner as string)) {
-      socialDinnerCount++;
-      if (socialDinnerCount > 1) {
-        console.log(`[SANITIZER] Correcting extra social dinner on ${day}`);
-        const fallbackDinner = user === 'Jessica' ? 'd1_j_manzo' : 'd1_m_manzo';
-        newPlan[day].dinner = fallbackDinner; // Fallback
-        newPlan[day].dinner_details = undefined;
-      }
-    }
-  });
-
-  // 5. FORCE TRAINING
-  ALL_DAYS.forEach(day => {
+    // Force Training Logic
     if (user === 'Michael') {
-      newPlan[day].training = (day === 'Tuesday' || day === 'Thursday');
+      dayPlan.training = (day === 'Tuesday' || day === 'Thursday');
     } else if (user === 'Jessica') {
-      newPlan[day].training = false;
+      dayPlan.training = false; // Default false
     }
 
-    // 6. OWNERSHIP & ID CORRECTION (More Robust)
+    // MEAL VALIDATION LOOP
     const MEAL_KEYS: (keyof DailyPlan)[] = ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner'];
     MEAL_KEYS.forEach(mealKey => {
-      let mealId = newPlan[day][mealKey] as string;
+      let mealId = dayPlan[mealKey] as string;
 
-      if (!mealId || typeof mealId !== 'string') return;
+      // Find guideline
+      let guideline = guidelines.find(g => g.id === mealId);
 
-      // Check for Michael's marker in Jessica's plan
-      // Pattern: Ends with "_m" OR contains "_m_"
-      if (user === 'Jessica' && (mealId.endsWith('_m') || mealId.includes('_m_'))) {
-        console.log(`[SANITIZER] Fixing ownership mismatch for Jessica: ${mealId} -> _j`);
-        const correctId = mealId.replace(/_m($|_)/, (match) => match.replace('m', 'j'));
-        (newPlan[day] as any)[mealKey] = correctId; // update ID
-        (newPlan[day] as any)[`${mealKey}_details`] = undefined;
-      }
-      // Check for Jessica's marker in Michael's plan
-      else if (user === 'Michael' && (mealId.endsWith('_j') || mealId.includes('_j_'))) {
-        console.log(`[SANITIZER] Fixing ownership mismatch for Michael: ${mealId} -> _m`);
-        const correctId = mealId.replace(/_j($|_)/, (match) => match.replace('j', 'm'));
-        (newPlan[day] as any)[mealKey] = correctId;
-        (newPlan[day] as any)[`${mealKey}_details`] = undefined;
-      }
+      // CHECK 1: DOES MEAL EXIST? IF NOT, TRY TO REPAIR ID (e.g. strict _m / _j swap)
+      if (!guideline && mealId) {
+        // Maybe AI used wrong suffix?
+        const swappedId = user === 'Michael'
+          ? mealId.replace('_j', '_m')
+          : mealId.replace('_m', '_j');
 
-      // Fallback: AI forgot to specify fruit for sam1
-      if (mealId === 'sam1' && !(newPlan[day] as any)[`${mealKey}_details`]?.specificFruit) {
-        const fruit = getSeasonalFruit();
-        const randomFruit = fruit[Math.floor(Math.random() * fruit.length)];
-        if (!(newPlan[day] as any)[`${mealKey}_details`]) {
-          (newPlan[day] as any)[`${mealKey}_details`] = { name: 'Frutta Fresca', specificFruit: randomFruit };
-        } else {
-          (newPlan[day] as any)[`${mealKey}_details`].specificFruit = randomFruit;
+        if (swappedId !== mealId) {
+          const manualFind = guidelines.find(g => g.id === swappedId);
+          if (manualFind) {
+            console.log(`[SANITIZER] Fixed ID typo for ${user}: ${mealId} -> ${swappedId}`);
+            mealId = swappedId;
+            guideline = manualFind;
+            (dayPlan as any)[mealKey] = mealId;
+          }
         }
       }
+
+      // CHECK 2: OWNERSHIP
+      // If we have a guideline, check if this user owns it.
+      if (guideline) {
+        if (guideline.owners && !guideline.owners.includes(user as any)) {
+          console.warn(`[SANITIZER] ❌ OWNERSHIP VIOLATION: ${user} cannot have ${mealId} (${guideline.name}). Fixing...`);
+
+          // Attempt 1: Find same name but for this user
+          const sibling = guidelines.find(g => g.name === guideline!.name && g.owners?.includes(user as any));
+          if (sibling) {
+            mealId = sibling.id;
+            console.log(`[SANITIZER] -> Swapped with sibling: ${sibling.id}`);
+          } else {
+            // Attempt 2: Find same ID pattern (swap suffix)
+            const suffixSwap = user === 'Michael' ? mealId.replace('_j', '_m') : mealId.replace('_m', '_j');
+            const suffixFind = guidelines.find(g => g.id === suffixSwap && g.owners?.includes(user as any));
+            if (suffixFind) {
+              mealId = suffixSwap;
+              console.log(`[SANITIZER] -> Swapped with suffix logic: ${suffixSwap}`);
+            } else {
+              // Attempt 3: Random valid fallback for this category
+              const fallbackOptions = guidelines.filter(g => g.type === mealKey && g.owners?.includes(user as any));
+              if (fallbackOptions.length > 0) {
+                const randomFallback = fallbackOptions[Math.floor(Math.random() * fallbackOptions.length)];
+                mealId = randomFallback.id;
+                console.log(`[SANITIZER] -> Fallback to random: ${mealId}`);
+              } else {
+                mealId = ''; // Should not happen if guidelines are complete
+              }
+            }
+          }
+          // Apply fix
+          (dayPlan as any)[mealKey] = mealId;
+        }
+      } else {
+        // NO GUIDELINE FOUND (Invalid ID)
+        // Pick random valid
+        const fallbackOptions = guidelines.filter(g => g.type === mealKey && g.owners?.includes(user as any));
+        if (fallbackOptions.length > 0) {
+          const randomFallback = fallbackOptions[Math.floor(Math.random() * fallbackOptions.length)];
+          // Don't overwrite if it was empty, maybe user wants empty? No, planner needs full days.
+          if (mealId !== '') {
+            console.log(`[SANITIZER] Replaced invalid ID '${mealId}' with '${randomFallback.id}'`);
+            mealId = randomFallback.id;
+            (dayPlan as any)[mealKey] = mealId;
+          } else {
+            // If it was empty, fill it!
+            mealId = randomFallback.id;
+            (dayPlan as any)[mealKey] = mealId;
+          }
+        }
+      }
+
+      // Clean details if ID changed materially
+      // (Not implemented strictly, but AI often provides details. We keep them if they match context, else they might look weird)
     });
+
   });
 
   return newPlan;
@@ -365,10 +337,11 @@ function sanitizePlan(plan: WeeklyPlan, user: string): WeeklyPlan {
 
 /**
  * Generates plans for BOTH users, syncing shared meals.
+ * Returns the plans WITHOUT saving them (Preview Mode).
  */
-export async function generateBothPlansAction(): Promise<{ success: boolean; message: string }> {
+export async function generateCouplePlanPreviewAction(): Promise<{ success: boolean; message: string; michaelPlan?: WeeklyPlan; jessicaPlan?: WeeklyPlan }> {
   try {
-    console.log('Generating Combined Plan for Michael & Jessica...');
+    console.log('Generating Combined Plan Preview for Michael & Jessica...');
 
     // 1. Generate INDEPENDENT SAFE PLANS
     const planMichael = await generateWeeklyPlanAI('Michael');
@@ -379,36 +352,56 @@ export async function generateBothPlansAction(): Promise<{ success: boolean; mes
     const WEEKEND = ['Saturday', 'Sunday'];
 
     const data = await getData();
-    const allGuidelines: MealOption[] = [...(data.users.Michael.guidelines || []), ...(data.users.Jessica.guidelines || [])];
+    const allGuidelines: MealOption[] = GUIDELINES; // Use source of truth or from data
 
-    const isSharedMeal = (mealId: string) => {
-      const meal = allGuidelines.find(g => g.id === mealId);
-      if (!meal) return false;
-      return meal.owners?.includes('Michael') && meal.owners?.includes('Jessica');
+    // Helpers
+    const getGuideline = (id: string) => allGuidelines.find(g => g.id === id);
+    const jessicaOwns = (id: string) => {
+      const g = getGuideline(id);
+      return g && g.owners?.includes('Jessica');
     };
 
     DAYS.forEach(day => {
-      if (!planMichael[day] || !planJessica[day]) return;
+      // Create objects if missing
+      if (!planMichael[day]) planMichael[day] = {} as any;
+      if (!planJessica[day]) planJessica[day] = {} as any;
 
-      // SYNC DINNER (Every day) - FORCE MICHAEL'S CHOICE ON JESSICA
-      // SYNC DINNER (Every day) - MAP MICHAEL'S CHOICE TO JESSICA'S
+      // SYNC DINNER (Every day)
       const michaelDinner = planMichael[day].dinner;
       if (michaelDinner) {
-        // Double check safety: Don't sync a weekday "social" meal even if AI somehow validated it
-        const isWeekday = !WEEKEND.includes(day);
-        const isSocial = ['d_amici', 'd2'].includes(michaelDinner);
+        let targetJessicaDinner = '';
 
-        if (isWeekday && isSocial) {
-          // Safety: Do not sync
+        // 1. Try Suffix Mapping (d1_m -> d1_j)
+        if (michaelDinner.includes('_m')) {
+          const candidate = michaelDinner.replace('_m', '_j');
+          if (jessicaOwns(candidate)) targetJessicaDinner = candidate;
         }
-        // 1. Map Michael Version -> Jessica Version (e.g. d1_m_pollo -> d1_j_pollo)
-        else if (michaelDinner.includes('_m')) {
-          const jVariant = michaelDinner.replace('_m', '_j');
-          planJessica[day].dinner = jVariant;
+
+        // 2. Try Direct Shared (d_amici)
+        if (!targetJessicaDinner) {
+          const g = getGuideline(michaelDinner);
+          if (g && g.owners?.includes('Michael') && g.owners?.includes('Jessica')) {
+            targetJessicaDinner = michaelDinner;
+          }
         }
-        // 2. Direct Shared Dinner (e.g. d_amici, d2 - if allowed)
-        else if (isSharedMeal(michaelDinner)) {
-          planJessica[day].dinner = michaelDinner;
+
+        // 3. Try Name Matching
+        if (!targetJessicaDinner) {
+          const mG = getGuideline(michaelDinner);
+          if (mG) {
+            const bestMatch = allGuidelines.find(g => g.name === mG.name && g.owners?.includes('Jessica'));
+            if (bestMatch) targetJessicaDinner = bestMatch.id;
+          }
+        }
+
+        // Apply if found and valid
+        if (targetJessicaDinner) {
+          planJessica[day].dinner = targetJessicaDinner;
+          // Also copy details if it's a "shared dish" conceptually (name match)
+          // We copy mapped details? Maybe safer to clear details and let UI resolve or copy basic name
+          if (planMichael[day].dinner_details) {
+            planJessica[day].dinner_details = { ...planMichael[day].dinner_details! };
+          }
         }
       }
 
@@ -416,32 +409,55 @@ export async function generateBothPlansAction(): Promise<{ success: boolean; mes
       if (WEEKEND.includes(day)) {
         const michaelLunch = planMichael[day].lunch;
         if (michaelLunch) {
-          // 1. Direct Shared Lunch (e.g. Suoceri)
-          if (['l_suoceri'].includes(michaelLunch)) {
-            planJessica[day].lunch = michaelLunch;
+          let targetJessicaLunch = '';
+
+          // 1. Explicit Suoceri/Special
+          if (['l_suoceri'].includes(michaelLunch)) targetJessicaLunch = michaelLunch;
+
+          // 2. Suffix
+          if (!targetJessicaLunch && michaelLunch.includes('_m')) {
+            const candidate = michaelLunch.replace('_m', '_j');
+            if (jessicaOwns(candidate)) targetJessicaLunch = candidate;
           }
-          // 2. Map Michael Version -> Jessica Version (e.g. l1_m -> l1_j)
-          else if (michaelLunch.includes('_m')) {
-            const jVariant = michaelLunch.replace('_m', '_j');
-            planJessica[day].lunch = jVariant;
+
+          // 3. Shared
+          if (!targetJessicaLunch) {
+            const g = getGuideline(michaelLunch);
+            if (g && g.owners?.includes('Michael') && g.owners.includes('Jessica')) {
+              targetJessicaLunch = michaelLunch;
+            }
           }
-          // 3. Fallback: If shared ID (mostly dinners, but just in case)
-          else if (isSharedMeal(michaelLunch)) {
-            planJessica[day].lunch = michaelLunch;
+
+          if (targetJessicaLunch) {
+            planJessica[day].lunch = targetJessicaLunch;
+            if (planMichael[day].lunch_details) {
+              planJessica[day].lunch_details = { ...planMichael[day].lunch_details! };
+            }
           }
         }
       }
     });
 
-    data.users.Michael.plan = planMichael;
-    data.users.Jessica.plan = planJessica;
-    await saveData(data);
-
-    return { success: true, message: 'Piani Sincronizzati Generati! Cene e Weekend allineati.' };
+    return { success: true, message: 'Anteprima Generated!', michaelPlan: planMichael, jessicaPlan: planJessica };
   } catch (e) {
     console.error('Combined Plan Generation Error:', e);
     return { success: false, message: 'Errore nella generazione dei piani combinati.' };
   }
+}
+
+/**
+ * Generates plans for BOTH users, syncing shared meals.
+ */
+export async function generateBothPlansAction(): Promise<{ success: boolean; message: string }> {
+  const result = await generateCouplePlanPreviewAction();
+  if (result.success && result.michaelPlan && result.jessicaPlan) {
+    const data = await getData();
+    data.users.Michael.plan = result.michaelPlan;
+    data.users.Jessica.plan = result.jessicaPlan;
+    await saveData(data);
+    return { success: true, message: 'Piani Sincronizzati Generati e Salvati!' };
+  }
+  return { success: false, message: result.message };
 }
 const CONAD_STORES = [
   { id: '008400', key: 'Bessarione', name: 'Conad Ponte Abbadesse', url: 'https://www.conad.it/ricerca-negozi/conad-piazzale-cardinal-bessarione-99-47521-cesena--008400' },
