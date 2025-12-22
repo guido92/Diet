@@ -8,8 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { getEccomiFlyerUrl } from './eccomi';
 
 const pdf = require('pdf-parse');
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+// const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || ''); // REMOVED GLOBAL INSTANTIATION
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
@@ -70,6 +69,7 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
 
     try {
       console.log(`[AI ROTATION] Attempt ${i + 1}/${shuffledModels.length}: Using ${modelId}...`);
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || ''); // Lazy Load
       const model = genAI.getGenerativeModel({ model: modelId });
       const result = await model.generateContent(prompt);
 
@@ -719,7 +719,7 @@ async function processWebViewerAction(url: string, storeName: string): Promise<C
 // 2. Extract Offers using Gemini Vision
 async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
   if (images.length === 0) return [];
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
   // 'gemini-1.5-flash' sometimes has versioning issues in beta. Using 'gemini-1.5-flash-latest' or 'gemini-1.5-pro' might be safer.
   // Updated to 'gemini-1.5-flash-latest' to fix 404 error.
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
