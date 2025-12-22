@@ -13,18 +13,38 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-2.0-flash-exp',   // Newest Experimental (often best)
-  'gemini-2.0-flash',       // Stable 2.0
-  'gemini-1.5-pro',         // High Quality Standard
-  'gemini-1.5-flash'        // Fast Standard
+  'gemini-2.0-flash-exp',    // Newest Experimental
+  'gemini-1.5-pro',          // Standard High Quality
+  'gemini-1.5-pro-latest',   // Always latest Pro
+  'gemini-1.5-flash',        // Good fallback
 ];
 
-// Team WORKER: High Speed & Quota
+// Team WORKER: High Speed & Quota (Max Rotation Pool)
 const WORKER_MODELS = [
-  'gemini-2.0-flash-exp',          // Fast & Smart
-  'gemini-1.5-flash',              // Reliable Workhorse
-  'gemini-1.5-flash-8b',           // Super fast/cheap
-  'gemini-2.0-flash-lite-preview'  // Lite
+  // 2.0 Series (Fastest/Newest)
+  'gemini-2.0-flash-exp',
+  'gemini-2.0-flash-lite-preview',
+
+  // 1.5 Flash Series (High Rate Limits)
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash-001',
+  'gemini-1.5-flash-002',
+
+  // 1.5 Flash-8B Series (Super Cheap/Fast)
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-flash-8b-latest',
+  'gemini-1.5-flash-8b-001',
+
+  // 1.5 Pro Series (Fallback - Lower Rate Limits but worth trying last)
+  'gemini-1.5-pro',
+  'gemini-1.5-pro-latest',
+  'gemini-1.5-pro-001',
+  'gemini-1.5-pro-002',
+
+  // Experimental/Previews
+  'gemini-exp-1206',
+  'learnlm-1.5-pro-experimental'
 ];
 
 /**
