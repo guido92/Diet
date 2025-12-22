@@ -33,7 +33,13 @@ const WORKER_MODELS = [
 async function callGeminiSafe(prompt: string, modelList: string[]): Promise<string> {
   const errors: string[] = [];
 
-  for (const modelId of modelList) {
+  // Shuffle models to avoid hammering the first one every time
+  const shuffledModels = [...modelList].sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < shuffledModels.length; i++) {
+    const modelId = shuffledModels[i];
+    const isLastToCheck = i === shuffledModels.length - 1;
+
     try {
       // console.log(`[AI ROTATION] Trying model: ${modelId}...`);
       const model = genAI.getGenerativeModel({ model: modelId });
@@ -48,18 +54,26 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
         throw e;
       }
 
-      // Check for Retry-After time in error message
-      // Matches: "retry in 56.10s" or "retryDelay":"56s"
-      let waitTime = 2000; // Default 2s
+      // Check for Retry-After time
+      let waitTime = 2000;
       const retryMatch = msg.match(/retry in (\d+(\.\d+)?)s/) || msg.match(/"retryDelay":"(\d+)s"/);
 
       if (retryMatch) {
         const seconds = parseFloat(retryMatch[1]);
-        waitTime = (seconds + 1) * 1000; // Add 1s buffer
-        console.log(`[AI RATE LIMIT] HIT 429. Waiting ${Math.ceil(waitTime / 1000)}s before next attempt... ⏳`);
+        waitTime = (seconds + 1) * 1000;
       } else if (msg.includes('429') || msg.includes('Too Many Requests')) {
-        waitTime = 10000; // Default 10s backoff for unparsed 429
-        console.log(`[AI RATE LIMIT] HIT 429 (Unknown time). Waiting 10s... ⏳`);
+        waitTime = 10000;
+      }
+
+      // IMPROVED LOGIC: If we hit 429, TRY NEXT MODEL IMMEDIATELY (if available)
+      // Only wait if this was the last model to try.
+      if ((msg.includes('429') || msg.includes('Too Many Requests'))) {
+        if (!isLastToCheck) {
+          console.log(`[AI RATE LIMIT] HIT 429 on ${modelId}. LEAPFROGGING to next model immediately... 🚀`);
+          continue; // SKIP WAIT, TRY NEXT
+        } else {
+          console.log(`[AI RATE LIMIT] HIT 429 on LAST model. Must wait ${Math.ceil(waitTime / 1000)}s... ⏳`);
+        }
       }
 
       await new Promise(r => setTimeout(r, waitTime));
