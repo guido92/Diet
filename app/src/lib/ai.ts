@@ -14,16 +14,23 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
   'gemini-2.0-flash-exp',    // Newest Experimental
+  'gemini-2.0-flash',        // Stable 2.0
+  'gemini-3.0-flash-exp',    // Gemini 3 Experimental
+  'gemini-3-flash-preview',  // Gemini 3 Preview
   'gemini-1.5-pro',          // Standard High Quality
-  'gemini-1.5-pro-latest',   // Always latest Pro
-  'gemini-1.5-flash',        // Good fallback
+  'gemini-1.5-flash'         // Good fallback
 ];
 
 // Team WORKER: High Speed & Quota (Max Rotation Pool)
 const WORKER_MODELS = [
+  // 3.0 Series (Future/Experimental)
+  'gemini-3.0-flash-exp',
+  'gemini-3-flash-preview',
+
   // 2.0 Series (Fastest/Newest)
   'gemini-2.0-flash-exp',
   'gemini-2.0-flash-lite-preview',
+  'gemini-2.0-flash',
 
   // 1.5 Flash Series (High Rate Limits)
   'gemini-1.5-flash',
