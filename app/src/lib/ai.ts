@@ -634,13 +634,6 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Lazy load pdf-parse
-    let pdf;
-    try {
-      pdf = require('pdf-parse');
-    } catch (e) {
-      return { success: false, message: 'Sistema PDF non disponibile.', count: 0 };
-    }
 
     // Lazy load pdf-parse
     let pdf;
@@ -823,6 +816,15 @@ export async function processPDFAction(formData: FormData): Promise<{ success: b
   try {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+
+    // Lazy load pdf-parse
+    let pdf;
+    try {
+      pdf = require('pdf-parse');
+    } catch (e) {
+      return { success: false, message: 'Sistema PDF non disponibile.' };
+    }
+
     const data = await pdf(buffer);
     const text = data.text;
 
