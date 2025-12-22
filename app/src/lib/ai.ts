@@ -13,18 +13,18 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-2.0-flash',       // Stable & High Quality
-  'gemini-flash-latest',    // Fast & Reliable
-  'gemini-pro-latest',      // Pro logic
-  'gemini-3-flash-preview', // experimental
-  'gemini-2.0-flash-exp'    // Experimental
+  'gemini-2.0-flash-exp',   // Newest Experimental (often best)
+  'gemini-2.0-flash',       // Stable 2.0
+  'gemini-1.5-pro',         // High Quality Standard
+  'gemini-1.5-flash'        // Fast Standard
 ];
 
 // Team WORKER: High Speed & Quota
 const WORKER_MODELS = [
-  'gemini-flash-latest',           // Best Quota/Speed
-  'gemini-flash-lite-latest',      // Very high quota
-  'gemini-2.0-flash-lite-preview'  // Lite Model
+  'gemini-2.0-flash-exp',          // Fast & Smart
+  'gemini-1.5-flash',              // Reliable Workhorse
+  'gemini-1.5-flash-8b',           // Super fast/cheap
+  'gemini-2.0-flash-lite-preview'  // Lite
 ];
 
 /**
@@ -33,50 +33,47 @@ const WORKER_MODELS = [
 async function callGeminiSafe(prompt: string, modelList: string[]): Promise<string> {
   const errors: string[] = [];
 
-  // Shuffle models to avoid hammering the first one every time
+  // Shuffle to distribute load
   const shuffledModels = [...modelList].sort(() => Math.random() - 0.5);
+
+  console.log(`[AI ROTATION] Starting attempt sequence with ${shuffledModels.length} models: ${shuffledModels.join(', ')}`);
 
   for (let i = 0; i < shuffledModels.length; i++) {
     const modelId = shuffledModels[i];
-    const isLastToCheck = i === shuffledModels.length - 1;
 
     try {
-      // console.log(`[AI ROTATION] Trying model: ${modelId}...`);
+      console.log(`[AI ROTATION] Attempt ${i + 1}/${shuffledModels.length}: Using ${modelId}...`);
       const model = genAI.getGenerativeModel({ model: modelId });
       const result = await model.generateContent(prompt);
+
+      console.log(`[AI ROTATION] ✅ Success with ${modelId}!`);
       return result.response.text();
     } catch (e: any) {
       const msg = e.message || String(e);
-      console.warn(`[AI ROTATION] Failed on ${modelId}: ${msg.substring(0, 150)}...`);
+      console.warn(`[AI ROTATION] ❌ Failed on ${modelId} (${i + 1}/${shuffledModels.length}): ${msg.substring(0, 100)}...`);
       errors.push(`${modelId}: ${msg}`);
 
       if (msg.includes('API key') || msg.includes('permission')) {
         throw e;
       }
 
-      // Check for Retry-After time
-      let waitTime = 2000;
-      const retryMatch = msg.match(/retry in (\d+(\.\d+)?)s/) || msg.match(/"retryDelay":"(\d+)s"/);
+      // Check if we should wait or leapfrog
+      const isRateLimit = msg.includes('429') || msg.includes('Too Many Requests');
+      const isLast = i === shuffledModels.length - 1;
 
-      if (retryMatch) {
-        const seconds = parseFloat(retryMatch[1]);
-        waitTime = (seconds + 1) * 1000;
-      } else if (msg.includes('429') || msg.includes('Too Many Requests')) {
-        waitTime = 10000;
+      if (isRateLimit && !isLast) {
+        console.log(`[AI ROTATION] ⏭️ Rate Limit (429) on ${modelId}. LEAPFROGGING immediately to next model...`);
+        continue; // Try next model immediately
       }
 
-      // IMPROVED LOGIC: If we hit 429, TRY NEXT MODEL IMMEDIATELY (if available)
-      // Only wait if this was the last model to try.
-      if ((msg.includes('429') || msg.includes('Too Many Requests'))) {
-        if (!isLastToCheck) {
-          console.log(`[AI RATE LIMIT] HIT 429 on ${modelId}. LEAPFROGGING to next model immediately... 🚀`);
-          continue; // SKIP WAIT, TRY NEXT
-        } else {
-          console.log(`[AI RATE LIMIT] HIT 429 on LAST model. Must wait ${Math.ceil(waitTime / 1000)}s... ⏳`);
-        }
+      // If it's a rate limit AND it's the last model, we have to wait/fail. 
+      // Or if it's another error (500, 503), we might want a small delay.
+      if (isLast) {
+        console.error(`[AI ROTATION] 💀 All models exhausted.`);
+      } else {
+        // Small delay for non-429 errors just in case
+        await new Promise(r => setTimeout(r, 1000));
       }
-
-      await new Promise(r => setTimeout(r, waitTime));
     }
   }
 
