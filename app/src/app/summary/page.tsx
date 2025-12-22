@@ -1,6 +1,6 @@
 import React from 'react';
 import { getData } from '@/lib/data';
-import CoupleManager from '../../components/CoupleManager';
+import CoupleManager from '../../components/CoupleManagerView';
 
 export const dynamic = 'force-dynamic';
 

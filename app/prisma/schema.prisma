@@ -1,0 +1,167 @@
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enums removed for SQLite compatibility
+
+// Core User Model
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          String    @default("CLIENT") // Role: NUTRITIONIST, CLIENT
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile Data (Client Only)
+  profile       UserProfile?
+  
+  // Relations
+  nutritionistId String?
+  nutritionist   User?   @relation("NutritionistClient", fields: [nutritionistId], references: [id])
+  clients        User[]  @relation("NutritionistClient")
+
+  // Data
+  plans          WeeklyPlan[]
+  guidelines     Guideline[]
+  stores         Store[]
+  manualItems    ManualItem[]
+  pantryItems    PantryItem[]
+}
+
+model UserProfile {
+  id             String  @id @default(uuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  startWeight    Float
+  currentWeight  Float
+  targetWeight   Float
+  height         Float
+  
+  logs           WeightLog[]
+}
+
+model WeightLog {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  weight    Float
+  notes     String?
+}
+
+// Shopping & Stores (Client Owned)
+model Store {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  url       String?  // Flyer URL (PDF or Web)
+  lastSync  DateTime?
+  storeId   String?  // External ID (e.g. Conad ID)
+
+  offers    ActiveOffer[]
+}
+
+model ActiveOffer {
+  id        String   @id @default(uuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  
+  category  String
+  product   String
+  price     String
+  unit      String
+  discount  String?
+  createdAt DateTime @default(now())
+}
+
+model ManualItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  amount    String
+  price     Float
+  checked   Boolean  @default(false)
+}
+
+model PantryItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   // Simple string for now
+}
+
+// Diet Logic (Managed by Nutritionist/System)
+model Guideline {
+  id          String   @id @default(uuid())
+  userId      String   // Assigned Client
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  originalId  String   // ID from the old system (e.g. 'b1')
+  name        String
+  description String
+  type        String   // breakfast, lunch, etc.
+  condition   String   // training, rest, always
+  season      String   // always, summer, etc.
+  
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id          String    @id @default(uuid())
+  guidelineId String
+  guideline   Guideline @relation(fields: [guidelineId], references: [id], onDelete: Cascade)
+  
+  name        String
+  amount      Float
+  unit        String
+}
+
+// Weekly Planner
+model WeeklyPlan {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  startDate DateTime // Monday of the week
+  days      DailyPlan[]
+  
+  @@unique([userId, startDate])
+}
+
+model DailyPlan {
+  id           String     @id @default(uuid())
+  planId       String
+  plan         WeeklyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  dayName      String     // Monday, Tuesday...
+  training     Boolean    @default(false)
+  
+  // Meals (Storing ID references or embedded data? Storing detailed snapshot is safer for history)
+  breakfast    String?    // Guideline ID
+  breakfastDet String?    // JSON Details (MealDetails)
+  
+  snackAm      String?
+  snackAmDet   String?
+  
+  lunch        String?
+  lunchDet     String?
+  
+  snackPm      String?
+  snackPmDet   String?
+  
+  dinner       String?
+  dinnerDet    String?
+}
