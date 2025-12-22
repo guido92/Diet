@@ -302,6 +302,7 @@ export async function updateActiveOffers(offers: ConadOffer[]) {
     data.activeOffers = [...data.activeOffers, ...newUniqueOffers];
     data.lastOfferUpdate = new Date().toISOString();
     await saveData(data);
+    revalidatePath('/shopping');
 }
 
 export async function clearActiveOffers() {
@@ -310,6 +311,7 @@ export async function clearActiveOffers() {
     data.conadFlyers = data.conadFlyers.map(f => ({ ...f, lastSync: '' }));
     data.lastOfferUpdate = undefined;
     await saveData(data);
+    revalidatePath('/shopping');
 }
 
 export async function addManualShoppingItem(name: string, amount: string, price: number) {
@@ -323,12 +325,14 @@ export async function addManualShoppingItem(name: string, amount: string, price:
     };
     data.manualShoppingItems.push(newItem);
     await saveData(data);
+    revalidatePath('/shopping');
 }
 
 export async function removeManualShoppingItem(id: string) {
     const data = await getData();
     data.manualShoppingItems = data.manualShoppingItems.filter(i => i.id !== id);
     await saveData(data);
+    revalidatePath('/shopping');
 }
 
 export async function toggleManualShoppingItem(id: string) {
@@ -336,12 +340,17 @@ export async function toggleManualShoppingItem(id: string) {
     const item = data.manualShoppingItems.find(i => i.id === id);
     if (item) item.checked = !item.checked;
     await saveData(data);
+    revalidatePath('/shopping');
 }
 
 export async function setCurrentUser(userName: 'Michael' | 'Jessica') {
     const data = await getData();
     data.currentUser = userName;
     await saveData(data);
+    revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/shopping');
+    revalidatePath('/tracker');
 }
 
 export async function updateWeight(weight: number, notes?: string) {
@@ -383,6 +392,8 @@ export async function saveWeeklyPlan(plan: WeeklyPlan) {
     data.users[data.currentUser].plan = plan;
     await saveData(data);
     revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/shopping');
 }
 
 

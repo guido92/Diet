@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg } from './guidelines';
 import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan } from './data';
 import { searchGialloZafferano } from './scraper';
+import { revalidatePath } from 'next/cache';
 
 const pdf = require('pdf-parse/lib/pdf-parse.js');
 
@@ -517,6 +518,7 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
         finalData.syncStatus = { state: 'success', message: 'Nessuna nuova offerta trovata (mantenute precedenti).', lastUpdate: Date.now() };
       }
       await saveData(finalData);
+      revalidatePath('/shopping');
       console.log('--- BACKGROUND SYNC FINISHED ---');
 
     } catch (bgError: any) {
@@ -612,7 +614,7 @@ async function processWebViewerAction(url: string, storeName: string): Promise<C
 
     if (imageBuffers.length === 0) return [];
 
-    return await extractOffersFromImagesAI(imageBuffers, storeName);
+    return await extractOffersFromImagesAI(imageBuffers);
 
   } catch (e) {
     console.error('Web Viewer Scraping Error:', e);
@@ -620,25 +622,32 @@ async function processWebViewerAction(url: string, storeName: string): Promise<C
   }
 }
 
-async function extractOffersFromImagesAI(images: Buffer[], storeName: string): Promise<ConadOffer[]> {
-  // Gemini 1.5 Flash supports images directly
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+// 2. Extract Offers using Gemini Vision
+async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
+  if (images.length === 0) return [];
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  // 'gemini-1.5-flash' sometimes has versioning issues in beta. Using 'gemini-1.5-flash-latest' or 'gemini-1.5-pro' might be safer.
+  // Updated to 'gemini-1.5-flash-latest' to fix 404 error.
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
   const prompt = `
-    Analizza queste immagini del volantino offerte del negozio "${storeName}".
-    Estrai i prodotti alimentari in offerta (Carne, Pesce, Ortofrutta, Latticini).
-    Ignora: Alcolici, Detersivi, Prodotti per la casa.
+    Analizza queste immagini del volantino "Eccomi".
+    Estrai TUTTE le offerte di prodotti alimentari (Carne, Pesce, Frutta, Verdura, Yogurt, Latte).
+    Ignora prodotti per la casa o non alimentari se non rilevanti.
     
-    Restituisci un JSON array:
-    [
-      {
-        "categoria": "Carne" | "Pesce" | "Frutta" | "Verdura" | "Altro",
-        "prodotto": "Nome prodotto",
-        "prezzo": "Prezzo (es. 1.99)",
-        "unita": "€/kg o €/pz",
-        "negozio": "${storeName}"
-      }
-    ]
+    Restituisci un ARRAY JSON con oggetti:
+    {
+      "categoria": "Carne" | "Pesce" | "Frutta" | "Verdura" | "Latticini" | "Dispensa/Altro",
+      "prodotto": "Nome esatto prodotto",
+      "prezzo": "Prezzo (es. 1.50)",
+      "unita": "Unità (es. al kg, al pezzo, conf. 300g)",
+      "sconto": "Sconto se presente (es. -20%)",
+      "negozio": "Eccomi Cesena"
+    }
+
+    REGOLE:
+    - Restituisci SOLO il JSON raw. Nessun markdown.
+    - Se l'immagine è sfocata o non contiene offerte, ignorala.
   `;
 
   // Prepare Parts
