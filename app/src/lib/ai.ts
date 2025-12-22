@@ -2,7 +2,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg, GUIDELINES } from './guidelines';
-import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan } from './data';
+import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan, getRecipeAction, saveRecipeAction } from './data';
 import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
 import { getEccomiFlyerUrl } from './eccomi';
@@ -153,11 +153,12 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
       '- JESSICA: Training FALSE (o variabile, ma default false).'}
 
       4. **INTELLIGENZA "CHEF MODE" (CRUCIALE)**:
-         - **VIETATO IL GENERICO**:
-           > Se scegli l'ID "sam1" (Frutta) o simili, NON lasciare i dettagli vuoti.
-           > Devi COMPILARE \`specificFruit\` con una scelta reale (es. "Mela Pink Lady", non "Frutta").
-           > Se scegli "Verdura", scrivi "Spinaci al limone", non "Verdura".
-         
+          - **VARIAZIONE OBBLIGATORIA (REGOLA ANTI-NOIA)**:
+           > È SEVERAMENTE VIETATO servire la stessa fonte principale (es. "Merluzzo", "Tacchino", "Pasta", "Riso") per due pasti consecutivi o troppo frequentemente.
+           > ALTERNA sempre: Carne Bianca -> Pesce -> Legumi -> Carne Rossa (raro).
+           > ALTERNA CARBOIDRATI: Pasta -> Riso -> Patate -> Pane -> Cereali.
+           > Se Lunedì Pranzo = Pasta, Martedì Pranzo NON PUÒ ESSERE PASTA.
+           
          - **USA LA DISPENSA**:
            > Se in dispensa c'è "Tonno", cerca di inserire un pasto col Tonno (se le linee guida lo permettono).
            > Se c'è "Riso", usa il Riso come carboidrato.
@@ -220,12 +221,29 @@ async function enrichPlanWithRecipes(plan: WeeklyPlan) {
 
     for (const meal of mealsToEnrich) {
       if (!meal) continue;
+
+      // 1. Check Cache
+      const cached = await getRecipeAction(meal.name);
+      if (cached) {
+        meal.recipeUrl = cached.url;
+        meal.imageUrl = cached.imageUrl;
+        console.log(`[RECIPE CACHE] Hit for "${meal.name}"`);
+        continue; // Skip scraping
+      }
+
+      // 2. Scrape if not in cache
       // Simple sequential scraping to avoid rate limits/blocks
       const result = await searchGialloZafferano(meal.name);
       if (result) {
         meal.recipeUrl = result.url;
         meal.imageUrl = result.imageUrl;
-        console.log(`[RECIPE] Found for "${meal.name}": ${result.url}`);
+        // Save to cache
+        await saveRecipeAction(meal.name, {
+          url: result.url,
+          imageUrl: result.imageUrl,
+          lastChecked: new Date().toISOString()
+        });
+        console.log(`[RECIPE] Found & Cached for "${meal.name}": ${result.url}`);
       } else {
         console.log(`[RECIPE] Not found for "${meal.name}"`);
       }

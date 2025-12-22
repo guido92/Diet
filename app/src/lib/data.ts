@@ -177,11 +177,18 @@ export type AppData = {
     conadFlyers: FlyerInfo[];
     activeOffers: ConadOffer[];
     lastOfferUpdate?: string;
+    recipes?: Record<string, RecipeCacheItem>; // Cache for scraped recipes
     syncStatus?: {
         state: 'idle' | 'running' | 'success' | 'error';
         message: string;
         lastUpdate: number;
     };
+};
+
+export type RecipeCacheItem = {
+    url: string;
+    imageUrl?: string;
+    lastChecked: string;
 };
 
 // ... existing code ...
@@ -270,6 +277,7 @@ export async function getData(): Promise<AppData> {
         if (!data.users) return DEFAULT_DATA;
         if (!data.manualShoppingItems) data.manualShoppingItems = [];
         if (!data.activeOffers) data.activeOffers = [];
+        if (!data.recipes) data.recipes = {};
         if (!data.conadFlyers) data.conadFlyers = [];
         if (!data.syncStatus) data.syncStatus = { state: 'idle', message: '', lastUpdate: 0 };
 
@@ -394,6 +402,32 @@ export async function saveWeeklyPlan(plan: WeeklyPlan) {
     revalidatePath('/');
     revalidatePath('/planner');
     revalidatePath('/shopping');
+}
+
+export async function saveCouplePlansAction(michaelPlan: WeeklyPlan, jessicaPlan: WeeklyPlan) {
+    const data = await getData();
+    data.users.Michael.plan = michaelPlan;
+    data.users.Jessica.plan = jessicaPlan;
+    await saveData(data);
+    revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/shopping');
+    revalidatePath('/summary');
+}
+
+export async function getRecipeAction(mealName: string): Promise<RecipeCacheItem | null> {
+    const data = await getData();
+    if (data.recipes && data.recipes[mealName]) {
+        return data.recipes[mealName];
+    }
+    return null;
+}
+
+export async function saveRecipeAction(mealName: string, recipe: RecipeCacheItem) {
+    const data = await getData();
+    if (!data.recipes) data.recipes = {};
+    data.recipes[mealName] = recipe;
+    await saveData(data);
 }
 
 

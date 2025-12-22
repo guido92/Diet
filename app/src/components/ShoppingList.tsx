@@ -63,6 +63,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                 const mealTypes = ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner'] as const;
                 mealTypes.forEach(type => {
                     const mealId = day[type];
+                    // @ts-ignore
                     const details = day[`${type}_details`];
 
                     if (mealId && typeof mealId === 'string') {
@@ -71,16 +72,34 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             let itemName = ing.name;
                             let subList: string[] = [];
 
-                            // Specific Overrides (Fruit/Veg)
-                            if (itemName === 'Frutta di Stagione') {
-                                if (details?.specificFruit) itemName = details.specificFruit;
-                                else { itemName = 'Frutta Mista'; subList = seasonalFruit; }
-                            }
-                            else if (itemName.includes('Verdura di Stagione')) {
-                                if (details?.specificVeg) itemName = details.specificVeg;
-                                else { itemName = 'Verdure Miste'; subList = seasonalVeg; }
+                            // --- SMART SHOPPING LOGIC ---
+
+                            // 1. Specific Overrides (E.g. "Riso" instead of "Carboidrati", "Orata" instead of "Pesce")
+                            if (details) {
+                                if (ing.name === 'Frutta di Stagione' && details.specificFruit) itemName = details.specificFruit;
+                                else if (ing.name.includes('Verdura') && details.specificVeg) itemName = details.specificVeg;
+                                else if (ing.name === 'Carboidrati' && details.specificCarb) itemName = details.specificCarb;
+                                else if (ing.name.includes('Proteina') && details.specificProtein) itemName = details.specificProtein;
+                                // Fallback: If generic name matches a category we have specific detail for
+                                else if (ing.name === 'Carboidrati' && details.name && (details.name.includes('Riso') || details.name.includes('Pasta'))) {
+                                    // Weak inference if specificCarb is missing but name hints it
+                                }
                             }
 
+                            // 2. Seasonal Fallbacks if still generic
+                            if (itemName === 'Frutta di Stagione') { itemName = 'Frutta Mista'; subList = seasonalFruit; }
+                            else if (itemName.includes('Verdura di Stagione')) { itemName = 'Verdure Miste'; subList = seasonalVeg; }
+
+                            // 3. Normalization (Start Case + Trim)
+                            // "Petto di pollo" -> "Petto Di Pollo"
+                            itemName = itemName
+                                .toLowerCase()
+                                .split(' ')
+                                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                                .join(' ')
+                                .trim();
+
+                            // 4. Accumulate
                             if (!totals[itemName]) totals[itemName] = { amount: 0, unit: ing.unit, owners: new Set(), subItems: {} };
                             totals[itemName].amount += ing.amount;
                             totals[itemName].owners.add(userName);
