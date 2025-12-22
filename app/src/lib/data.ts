@@ -287,7 +287,11 @@ export async function getData(): Promise<AppData> {
 
         return data;
     } catch (error) {
-        await saveData(DEFAULT_DATA);
+        try {
+            await saveData(DEFAULT_DATA);
+        } catch (writeError) {
+            console.warn('Could not save default data (likely build environment):', writeError);
+        }
         return DEFAULT_DATA;
     }
 }

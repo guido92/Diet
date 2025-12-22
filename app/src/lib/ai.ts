@@ -7,7 +7,7 @@ import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
 import { getEccomiFlyerUrl } from './eccomi';
 
-const pdf = require('pdf-parse/lib/pdf-parse.js');
+const pdf = require('pdf-parse');
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
