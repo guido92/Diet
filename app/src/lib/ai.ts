@@ -7,7 +7,7 @@ import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
 import { getEccomiFlyerUrl } from './eccomi';
 
-const pdf = require('pdf-parse');
+// const pdf = require('pdf-parse'); // Lazy loaded inside functions
 // const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || ''); // REMOVED GLOBAL INSTANTIATION
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
@@ -571,6 +571,7 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
               });
               if (pdfResponse.ok) {
                 const buffer = Buffer.from(await pdfResponse.arrayBuffer());
+                const pdf = require('pdf-parse'); // Lazy load
                 if (typeof pdf === 'function') {
                   const pdfData = await pdf(buffer);
                   if (pdfData.text && pdfData.text.length > 200) {
@@ -633,8 +634,15 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    if (typeof pdf !== 'function') {
-      return { success: false, message: 'Sistema PDF non pronto.', count: 0 };
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Lazy load pdf-parse
+    let pdf;
+    try {
+      pdf = require('pdf-parse');
+    } catch (e) {
+      return { success: false, message: 'Sistema PDF non disponibile.', count: 0 };
     }
 
     const pdfData = await pdf(buffer);
