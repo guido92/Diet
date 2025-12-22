@@ -226,6 +226,7 @@ const DEFAULT_DATA: AppData = {
         { url: 'https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CESENA_2528A_NATALE_15DIC_24DIC_WEB.pdf', lastSync: '', label: 'Spazio Conad Lucchi (Natale)', storeId: '007226' }
     ],
     activeOffers: [],
+    recipes: {},
     syncStatus: { state: 'idle', message: '', lastUpdate: 0 }
 };
 
