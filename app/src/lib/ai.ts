@@ -5,6 +5,7 @@ import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg } from 
 import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan } from './data';
 import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
+import { getEccomiFlyerUrl } from './eccomi';
 
 const pdf = require('pdf-parse/lib/pdf-parse.js');
 
@@ -409,11 +410,7 @@ const CONAD_STORES = [
   { id: '007226', key: 'Lucchi', name: 'Conad Montefiore', url: 'https://www.conad.it/ricerca-negozi/spazio-conad-via-leopoldo-lucchi-525-47521-cesena--007226' }
 ];
 
-const ECCOMI_SOURCE = {
-  name: 'Eccomi Cesena',
-  indexUrl: 'https://www.offertevolantini.it/negozi/eccomi/volantino-offerte',
-  baseUrl: 'https://www.offertevolantini.it'
-};
+
 
 export async function smartSyncOffersAction(): Promise<{ success: boolean; message: string; count: number }> {
   // 1. Set Status to RUNNING immediately
@@ -491,20 +488,15 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       }
 
       // 2. ECCOMI SYNC
-      console.log(`Smart Sync: Checking ${ECCOMI_SOURCE.name}...`);
+      // 2. ECCOMI SYNC (Official Site)
+      console.log(`Smart Sync: Checking Eccomi Supermercati...`);
       try {
-        const indexHtml = await fetch(ECCOMI_SOURCE.indexUrl).then(r => r.text());
-        const flyerMatch = indexHtml.match(/\/visualizza\/offerte\/volantino-[^"']+/);
-        if (flyerMatch) {
-          const flyerUrl = `${ECCOMI_SOURCE.baseUrl}${flyerMatch[0]}`;
-          console.log(`Found Eccomi Flyer: ${flyerUrl}`);
-          const webOffers = await processWebViewerAction(flyerUrl, 'Eccomi Cesena');
-          if (webOffers.length > 0) {
-            newActiveOffers = [...newActiveOffers, ...webOffers];
-            totalOffers += webOffers.length;
-            data.conadFlyers.push({ url: flyerUrl, lastSync: new Date().toISOString(), label: 'Eccomi Cesena (Web)', storeId: 'eccomi-cesena' });
-            flyersFound++;
-          }
+        const eccomiUrl = await getEccomiFlyerUrl();
+        if (eccomiUrl) {
+          console.log(`Found Eccomi Flyer: ${eccomiUrl}`);
+          // We add it to the list. We don't have offer extraction for Issuu yet, so we skip extraction.
+          data.conadFlyers.push({ url: eccomiUrl, lastSync: new Date().toISOString(), label: 'Eccomi (Cesena)', storeId: 'eccomi-cesena' });
+          flyersFound++;
         }
       } catch (e) { console.error('Eccomi fail', e); }
 
