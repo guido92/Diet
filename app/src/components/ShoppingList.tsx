@@ -366,46 +366,69 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             </div>
 
                             {/* Responsive Grid Layout */}
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                                gap: '12px'
-                            }}>
-                                {filteredOffers.map((offer, idx) => (
-                                    <div key={idx} className="card" style={{
-                                        padding: '12px',
-                                        border: '1px solid rgba(234, 179, 8, 0.3)',
-                                        background: 'rgba(234, 179, 8, 0.05)',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        position: 'relative',
-                                        margin: 0
+                            {Object.entries(
+                                filteredOffers.reduce((acc, offer) => {
+                                    const store = offer.negozio || 'Altro';
+                                    if (!acc[store]) acc[store] = [];
+                                    acc[store].push(offer);
+                                    return acc;
+                                }, {} as Record<string, typeof filteredOffers>)
+                            ).sort((a, b) => a[0].localeCompare(b[0])).map(([storeName, offers]) => (
+                                <div key={storeName} style={{ marginBottom: '20px' }}>
+                                    <h4 style={{
+                                        color: '#94a3b8',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 700,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em',
+                                        marginBottom: '10px',
+                                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                        paddingBottom: '4px'
                                     }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                            <span style={{ fontSize: '0.65rem', color: '#eab308', textTransform: 'uppercase', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
-                                                {offer.categoria}
-                                            </span>
-                                        </div>
-                                        <h4 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '6px 0', flex: 1, lineHeight: '1.3', minHeight: '2.6em' }}>
-                                            {offer.prodotto}
-                                        </h4>
-                                        <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '8px' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#10b981', letterSpacing: '-0.02em' }}>{offer.prezzo}</span>
-                                                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{offer.unita}</span>
+                                        {storeName}
+                                    </h4>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                                        gap: '12px'
+                                    }}>
+                                        {offers.map((offer, idx) => (
+                                            <div key={idx} className="card" style={{
+                                                padding: '12px',
+                                                border: '1px solid rgba(234, 179, 8, 0.3)',
+                                                background: 'rgba(234, 179, 8, 0.05)',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                position: 'relative',
+                                                margin: 0
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <span style={{ fontSize: '0.65rem', color: '#eab308', textTransform: 'uppercase', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
+                                                        {offer.categoria}
+                                                    </span>
+                                                </div>
+                                                <h4 style={{ fontSize: '0.9rem', fontWeight: 600, margin: '6px 0', flex: 1, lineHeight: '1.3', minHeight: '2.6em' }}>
+                                                    {offer.prodotto}
+                                                </h4>
+                                                <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#10b981', letterSpacing: '-0.02em' }}>{offer.prezzo}</span>
+                                                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{offer.unita}</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleAddOffer(offer)}
+                                                        className="btn btn-primary"
+                                                        style={{ width: '32px', height: '32px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                    >
+                                                        <Plus size={18} />
+                                                    </button>
+                                                </div>
+                                                {offer.sconto && <div style={{ position: 'absolute', top: '8px', right: '8px' }}><span style={{ fontSize: '0.65rem', background: '#ef4444', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{offer.sconto}</span></div>}
                                             </div>
-                                            <button
-                                                onClick={() => handleAddOffer(offer)}
-                                                className="btn btn-primary"
-                                                style={{ width: '32px', height: '32px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                            >
-                                                <Plus size={18} />
-                                            </button>
-                                        </div>
-                                        {offer.sconto && <div style={{ position: 'absolute', top: '8px', right: '8px' }}><span style={{ fontSize: '0.65rem', background: '#ef4444', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{offer.sconto}</span></div>}
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                             {filteredOffers.length === 0 && (
                                 <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontSize: '0.9rem' }}>
                                     Nessuna offerta trovata per "{searchTerm}" in questa categoria.
@@ -456,7 +479,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                                         {packSuggestion && <span style={{ fontSize: '0.75rem', background: '#0f172a', padding: '2px 8px', borderRadius: '4px', border: '1px solid #334155' }}>💡 {packSuggestion}</span>}
                                         {matchingOffer && (
                                             <span style={{ fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
-                                                PROMO: {matchingOffer.prezzo}
+                                                PROMO {matchingOffer.negozio ? `(${matchingOffer.negozio})` : ''}: {matchingOffer.prezzo}
                                             </span>
                                         )}
                                         <span style={{ fontSize: '0.65rem', color: '#64748b' }}>({Array.from(data.owners).join(' + ')})</span>

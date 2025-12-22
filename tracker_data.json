@@ -3,7 +3,7 @@
   "users": {
     "Michael": {
       "startWeight": 111,
-      "currentWeight": 111,
+      "currentWeight": 111.1,
       "height": 170,
       "plan": {
         "Monday": {
@@ -63,7 +63,22 @@
           "dinner": "d1_m_manzo"
         }
       },
-      "logs": [],
+      "logs": [
+        {
+          "date": "2025-12-22",
+          "weight": 111.1,
+          "notes": "Audit Test"
+        },
+        {
+          "date": "2025-12-22",
+          "weight": 111.19999999999999,
+          "notes": "Audit Test"
+        },
+        {
+          "date": "2025-12-22",
+          "weight": 111.1
+        }
+      ],
       "guidelines": [
         {
           "id": "b1_m",
@@ -2453,29 +2468,37 @@
   "manualShoppingItems": [],
   "activeOffers": [
     {
+      "categoria": "Pesce Affumicato",
+      "prodotto": "SALMONE NORVEGESE L’INEDITO",
+      "prezzo": "19,90",
+      "unita": "300 g",
+      "note": "Confezione regalo in legno",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce Affumicato",
+      "prodotto": "SALMONE SCOZZESE AFFUMICATO LA NEF",
+      "prezzo": "5,99",
+      "unita": "140 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
       "categoria": "Carne",
-      "prodotto": "Polpa scelta in svizzere di Vitello CONAD Percorso Qualità",
+      "prodotto": "POLPA SCELTA IN SVIZZERE DI VITELLO CONAD PERCORSO QUALITÀ",
       "prezzo": "15,90",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Carne",
-      "prodotto": "Polpa in arrosto di Vitello CONAD Percorso Qualità",
+      "prodotto": "POLPA IN ARROSTO DI VITELLO CONAD PERCORSO QUALITÀ",
       "prezzo": "14,90",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Carne",
-      "prodotto": "Polpa posteriore di Vitello CONAD Percorso Qualità",
-      "prezzo": "17,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Lombo di Suino senza osso CONAD Percorso Qualità",
+      "prodotto": "LOMBO DI SUINO SENZA OSSO CONAD PERCORSO QUALITÀ",
       "prezzo": "5,40",
       "unita": "al kg",
       "note": "In tranci",
@@ -2483,296 +2506,164 @@
     },
     {
       "categoria": "Carne",
-      "prodotto": "Pollo a busto 'Come una volta' CONAD Percorso Qualità",
+      "prodotto": "POLLO A BUSTO 'COME UNA VOLTA' SAPORI&IDEE CONAD",
       "prezzo": "5,40",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Carne",
-      "prodotto": "Cotechino Modena IGP CASA MODENA",
-      "prezzo": "4,70",
-      "unita": "500 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Orate fresche CONAD Percorso Qualità",
-      "prezzo": "9,90",
+      "prodotto": "CAPPONE A BUSTO CONAD PERCORSO QUALITÀ",
+      "prezzo": "7,80",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Trancio di Salmone Superior CONAD Percorso Qualità",
-      "prezzo": "13,90",
+      "categoria": "Frutta",
+      "prodotto": "CLEMENTINE con foglia",
+      "prezzo": "1,99",
       "unita": "al kg",
+      "note": "Sfuse",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Gamberi Argentini interi (decongelati)",
-      "prezzo": "12,90",
+      "categoria": "Frutta",
+      "prodotto": "ARANCE NAVEL CONAD PERCORSO QUALITÀ",
+      "prezzo": "1,79",
       "unita": "al kg",
+      "note": "Sfuse",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce (Surgelato)",
-      "prodotto": "Gamberi Argentini interi ALBATROS",
-      "prezzo": "9,90",
-      "unita": "800 g",
+      "categoria": "Frutta",
+      "prodotto": "AVOCADO SAPORI&IDEE CONAD",
+      "prezzo": "1,49",
+      "unita": "220 g",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce (Scatoletta)",
-      "prodotto": "Tonno NOSTROMO all'olio di oliva",
-      "prezzo": "2,99",
-      "unita": "70 g x4",
+      "categoria": "Frutta",
+      "prodotto": "MELE GOLDEN SAPORI&DINTORNI CONAD",
+      "prezzo": "1,79",
+      "unita": "al kg",
+      "note": "Sfuse",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Verdura",
-      "prodotto": "Patate di Bologna DOP della Sila IGP CONAD PQ",
+      "prodotto": "PATATE DI BOLOGNA DOPO DELLA SILA IGP CONAD",
       "prezzo": "1,99",
       "unita": "1,5 kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Verdura",
-      "prodotto": "Pomodoro ciliegino CONAD Percorso Qualità",
+      "prodotto": "POMODORO CILIEGINO CONAD PERCORSO QUALITÀ",
       "prezzo": "1,59",
       "unita": "500 g",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Verdura",
-      "prodotto": "Spinaci CONAD Percorso Qualità",
+      "prodotto": "SPINACI CONAD PERCORSO QUALITÀ",
       "prezzo": "1,79",
       "unita": "500 g",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Verdura (Surgelata)",
-      "prodotto": "Spinaci Cubello OROGEL",
-      "prezzo": "1,99",
-      "unita": "900 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Verdura (Surgelata)",
-      "prodotto": "Pisellini Primavera FINDUS",
-      "prezzo": "3,59",
-      "unita": "700 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Frutta",
-      "prodotto": "Arance Navel CONAD Percorso Qualità (sfuse)",
-      "prezzo": "1,79",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Frutta",
-      "prodotto": "Mele Golden SAPORI&DINTORNI CONAD (sfuse)",
-      "prezzo": "1,79",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Frutta",
-      "prodotto": "Clementine con foglia (sfuse)",
-      "prezzo": "1,99",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Frutta",
-      "prodotto": "Avocado SAPORI&IDEE CONAD",
-      "prezzo": "1,49",
-      "unita": "220 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Yogurt",
-      "prodotto": "Yogurt Bianco CONAD (magro 0% di grassi)",
-      "prezzo": "0,99",
-      "unita": "500 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Ricotta SANTA LUCIA GALBANI",
-      "prezzo": "1,19",
-      "unita": "250 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Ricotta Delizia di Latte CONAD",
-      "prezzo": "7,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Parmigiano Reggiano DOP CONAD (18 mesi)",
-      "prezzo": "18,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Mozzarella SANTA LUCIA GALBANI",
-      "prezzo": "2,99",
-      "unita": "125 g x3",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Bocconcini di Mozzarella di Bufala Campana DOP",
-      "prezzo": "3,39",
-      "unita": "270 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini/Formaggi",
-      "prodotto": "Robiola CONAD",
-      "prezzo": "1,99",
-      "unita": "100 g x2",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Polpa posteriore di bovino adulto Scottona Percorso Qualità",
-      "prezzo": "19,90",
-      "unita": "al kg",
-      "note": "Percorso Qualità",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Pollo 'Come una volta'",
-      "prezzo": "6,90",
-      "unita": "al kg",
-      "note": "Allevato senza uso di antibiotici",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Tartare di Scottona Sapori&Idee Conad",
-      "prezzo": "4,90",
-      "unita": "210 g",
-      "note": "105 g x 2",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Prosciutto di Parma DOP (min. 24 mesi)",
-      "prezzo": "31,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Culatello di Zibello DOP",
-      "prezzo": "54,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Arista di suino farcita delicata",
+      "categoria": "Pesce Fresco",
+      "prodotto": "ORATE FRESCHE CONAD PERCORSO QUALITÀ",
       "prezzo": "9,90",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Filetto di Salmone Superior Percorso Qualità",
-      "prezzo": "19,90",
+      "categoria": "Pesce Fresco",
+      "prodotto": "TRANCIO DI SALMONE SUPERIOR CONAD PERCORSO QUALITÀ",
+      "prezzo": "13,90",
       "unita": "al kg",
-      "note": "Allevato Senza Uso Di Antibiotici",
+      "note": "Allevato senza antibiotici",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Astice Americano",
-      "prezzo": "29,90",
-      "unita": "al kg",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Branzino (Allevato in mare Adriatico)",
-      "prezzo": "17,90",
+      "categoria": "Pesce Fresco",
+      "prodotto": "GAMBERI ARGENTINI INTERI DECONGELATI",
+      "prezzo": "12,90",
       "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Gambero Argentino Selvaggio Sapori&Idee Conad",
-      "prezzo": "6,90",
-      "unita": "400 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Tartare di tonno Sapori&Idee Conad",
-      "prezzo": "4,50",
-      "unita": "100 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Vongole dell’Adriatico al naturale con guscio",
-      "prezzo": "4,49",
-      "unita": "450 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Verdura",
-      "prodotto": "Radicchio Rosso di Treviso IGP Tardivo",
-      "prezzo": "3,49",
-      "unita": "350 g",
-      "note": "Percorso Qualità",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Verdura",
-      "prodotto": "Pomodoro il Camone Sapori&Dintorni Conad",
-      "prezzo": "1,59",
-      "unita": "300 g",
-      "note": "Percorso Qualità",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Verdura",
-      "prodotto": "Legumi o Cereali Italiani (Fagioli, Ceci, Farro)",
-      "prezzo": "1,49",
-      "unita": "300 g",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Frutta",
-      "prodotto": "Frutta esotica Sapori&Idee Conad (Mango nel ricettario)",
-      "prezzo": "N/D",
-      "unita": "N/D",
-      "sconto": "20%",
-      "negozio": "Conad Ponte Abbadesse"
-    },
-    {
-      "categoria": "Latticini",
-      "prodotto": "Mozzarella di Bufala Campana DOP",
-      "prezzo": "5,90",
+      "categoria": "Latticini/Yogurt",
+      "prodotto": "YOGURT BIANCO CONAD",
+      "prezzo": "0,99",
       "unita": "500 g",
+      "note": "Magro 0% di grassi (dolce o naturale)",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Latticini",
-      "prodotto": "Ricotta di Bufala Campana DOP",
-      "prezzo": "1,49",
+      "prodotto": "RICOTTA DELIZIA DI LATTE CONAD",
+      "prezzo": "7,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "PARMIGIANO REGGIANO DOP CONAD (18 mesi)",
+      "prezzo": "18,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "ROBIOLA CONAD",
+      "prezzo": "1,99",
+      "unita": "100 g x2",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "MOZZARELLA SANTA LUCIA GALBANI (Classica)",
+      "prezzo": "2,99",
+      "unita": "125 g x3",
+      "sconto": "30%",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "BOCCONCINI DI MOZZARELLA DI BUFALA CAMPANA DOP",
+      "prezzo": "3,39",
+      "unita": "270 g",
+      "sconto": "40%",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "FORMAGGIO FRESCO PHILADELPHIA Original",
+      "prezzo": "2,19",
       "unita": "250 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce Surgelato",
+      "prodotto": "CROCCANTI FILETTI DI MERLUZZO CONAD",
+      "prezzo": "2,99",
+      "unita": "400 g",
+      "note": "4 pezzi",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura Surgelata",
+      "prodotto": "SPINACI CUBELLO OROGEL",
+      "prezzo": "1,99",
+      "unita": "900 g",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce In Scatola",
+      "prodotto": "TONNO NOSTROMO all'olio di oliva",
+      "prezzo": "2,99",
+      "unita": "70 g x4",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
@@ -2783,10 +2674,119 @@
       "negozio": "Conad Ponte Abbadesse"
     },
     {
+      "categoria": "Carne",
+      "prodotto": "Tartare di Scottona Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "4,90",
+      "unita": "210 g x 2 (420 g)",
+      "note": "23,34 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
       "categoria": "Latticini",
-      "prodotto": "Parmigiano Reggiano DOP (min. 30 mesi)",
-      "prezzo": "22,90",
+      "prodotto": "Mozzarella di Bufala Campana DOP Sapori&Dintorni Conad",
+      "prezzo": "5,90",
+      "unita": "500 g",
+      "note": "11,80 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Ricotta di Bufala Campana DOP Sapori&Dintorni Conad",
+      "prezzo": "1,49",
+      "unita": "250 g",
+      "note": "5,96 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Squacquerone di Romagna DOP Sapori&Dintorni Conad",
+      "prezzo": "2,69",
+      "unita": "280 g",
+      "note": "9,61 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Caciocavallo Stagionato in Grotta Sapori&Idee Conad",
+      "prezzo": "19,90",
       "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Formaggio Angelico del Grappa Sapori&Idee Conad",
+      "prezzo": "12,50",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "Ricotta di Capra Sapori&Idee Conad take away",
+      "prezzo": "2,79",
+      "unita": "250 g",
+      "note": "11,16 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Guanciale Sapori&Dintorni Conad",
+      "prezzo": "15,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Prosciutto di Parma DOP Sapori&Dintorni Conad (stag. min. 24 mesi)",
+      "prezzo": "31,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Salame Felino IGP Sapori&Dintorni Conad",
+      "prezzo": "16,90",
+      "unita": "al kg",
+      "note": "Vendita intera",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Salmone Affumicato Sockeye Selvaggio dell’Alaska Sapori&Idee Conad",
+      "prezzo": "12,90",
+      "unita": "200 g",
+      "note": "64,50 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Cuore di Salmone Affumicato Norvegese Sapori&Idee Conad",
+      "prezzo": "6,99",
+      "unita": "130 g",
+      "note": "53,77 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Tartare di tonno Sapori&Idee Conad",
+      "prezzo": "4,50",
+      "unita": "100 g",
+      "note": "45,00 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Tentacoli di polpo Sapori&Idee Conad",
+      "prezzo": "8,90",
+      "unita": "200 g",
+      "note": "44,50 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Code di Gamberi Argentini Sapori&Idee Conad",
+      "prezzo": "5,90",
+      "unita": "300 g",
+      "note": "19,67 € al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
@@ -2797,24 +2797,304 @@
       "negozio": "Conad Ponte Abbadesse"
     },
     {
-      "categoria": "Latticini",
-      "prodotto": "Squacquerone di Romagna DOP",
-      "prezzo": "2,69",
-      "unita": "280 g",
+      "categoria": "Pesce",
+      "prodotto": "Gambero Argentino Selvaggio Sapori&Idee Conad",
+      "prezzo": "6,90",
+      "unita": "400 g",
+      "note": "17,25 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di Baccalà dissalato Sapori&Idee Conad",
+      "prezzo": "9,90",
+      "unita": "400 g",
+      "note": "24,75 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di Salmone Superior Conad Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "note": "Allevato Senza Uso Di Antibiotici",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Branzino (Allevato in mare Adriatico)",
+      "prezzo": "17,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Pomodoro il Camone Sapori&Dintorni Conad Percorso Qualità",
+      "prezzo": "1,59",
+      "unita": "300 g",
+      "note": "5,30 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpettone di Scottona con Speck Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "6,90",
+      "unita": "500 g",
+      "note": "13,80 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Hamburger di Angus Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "3,90",
+      "unita": "180 g",
+      "note": "21,67 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Radicchio Rosso di Treviso IGP Tardivo Sapori&Dintorni Conad Percorso Qualità",
+      "prezzo": "3,49",
+      "unita": "350 g",
+      "note": "9,98 € al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Pollo “Come una volta” Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "6,90",
+      "unita": "al kg",
+      "note": "Allevato senza uso di antibiotici",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "Funghi Porcini Sapori&Idee Conad",
+      "prezzo": "3,69",
+      "unita": "variabile (200g/250g/300g)",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "Frutta esotica Sapori&Idee Conad",
+      "prezzo": "N/A",
+      "unita": "N/A",
+      "sconto": "20%",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Arista di suino farcita delicata",
+      "prezzo": "9,90",
+      "unita": "al kg",
+      "negozio": "Conad Ponte Abbadesse"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa posteriore di bovino adulto Scottona Conad Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
       "negozio": "Conad Ponte Abbadesse"
     },
     {
       "categoria": "Latticini",
-      "prodotto": "Gorgonzola DOP Piccante Sapori&Dintorni Conad",
-      "prezzo": "13,50",
+      "prodotto": "LATTE PARZIALMENTE SCREMATO GRANAROLO",
+      "prezzo": "0,89",
+      "unita": "1 litro",
+      "sconto": "40%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini (Yogurt)",
+      "prodotto": "YOGURT EXTRA CREMOSO MERAN",
+      "prezzo": "0,69",
+      "unita": "150 g",
+      "sconto": "30%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "MOZZARELLA GRANAROLO (classica/oggi puoi)",
+      "prezzo": "2,29",
+      "unita": "3 x 100 g",
+      "sconto": "42%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "MOZZARELLA DI BUFALA CAMPANA DOP FATTORIE GAROFALO",
+      "prezzo": "1,99",
+      "unita": "125 g",
+      "sconto": "26%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Latticini",
+      "prodotto": "PARMIGIANO REGGIANO PARMAREGGIO (30 mesi)",
+      "prezzo": "12,90",
+      "unita": "500 g",
+      "sconto": "13%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne (Fresco al banco)",
+      "prodotto": "LOMBO DI SUINO SENZA OSSO A TRANCI CONAD PERCORSO QUALITÀ",
+      "prezzo": "5,40",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne (Fresco al banco)",
+      "prodotto": "CAPPONE A BUSTO CONAD PERCORSO QUALITÀ",
+      "prezzo": "7,80",
+      "unita": "al kg",
+      "note": "Allevato senza uso di antibiotici",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "FESA DI TACCHINO A FETTE CONAD PERCORSO QUALITÀ (formato convenienza)",
+      "prezzo": "7,90",
+      "unita": "800 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce (Fresco al banco)",
+      "prodotto": "ORATE FRESCHE CONAD PERCORSO QUALITÀ",
+      "prezzo": "9,90",
+      "unita": "al kg",
+      "note": "Allevate senza uso di antibiotici",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce (Fresco al banco)",
+      "prodotto": "SALMONE SUPERIOR CONAD PERCORSO QUALITÀ (in tranci)",
+      "prezzo": "13,90",
+      "unita": "al kg",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce (Confezionato)",
+      "prodotto": "SALMONE AFFUMICATO NORVEGESE CONAD",
+      "prezzo": "6,90",
+      "unita": "200 g",
+      "sconto": "30%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce (Surgelato)",
+      "prodotto": "FILETTI DI MERLUZZO FINDUS",
+      "prezzo": "4,90",
+      "unita": "360 g",
+      "sconto": "37%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "CLEMENTINE CON FOGLIA",
+      "prezzo": "2,99",
+      "unita": "2 kg",
+      "note": "Prodotto Italiano",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Frutta",
+      "prodotto": "ARANCE NAVEL CONAD PERCORSO QUALITÀ",
+      "prezzo": "1,79",
+      "unita": "al kg",
+      "note": "Prodotto Italiano",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura",
+      "prodotto": "PATATE DELLA SILA IGP CONAD PERCORSO QUALITÀ",
+      "prezzo": "1,99",
+      "unita": "1,5 kg",
+      "note": "Prodotto Italiano",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura (Surgelato)",
+      "prodotto": "SPINACI CUBELLO FOGLIA PIÙ OROGEL",
+      "prezzo": "2,19",
+      "unita": "900 g",
+      "sconto": "37%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura (Surgelato)",
+      "prodotto": "PISELLI NOVELLI FINDUS",
+      "prezzo": "3,59",
+      "unita": "1000 g",
+      "sconto": "20%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Verdura (Legumi/Cotti)",
+      "prodotto": "LEGUMI COTTI A VAPORE VALFRUTTA (fagioli/ceci/lenticchie)",
+      "prezzo": "1,59",
+      "unita": "3 x 150 g (sgocc. 140 g)",
+      "sconto": "36%",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Pollo “Come una volta” Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "6,90",
+      "unita": "al kg",
+      "note": "Allevato senza uso di antibiotici",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Polpa posteriore di bovino adulto Scottona Conad percorso qualità",
+      "prezzo": "19,90",
       "unita": "al kg",
       "negozio": "Conad Montefiore"
     },
     {
       "categoria": "Carne",
-      "prodotto": "Tartare di Scottona Sapori&Idee Conad",
+      "prodotto": "Tartare di Scottona Sapori&Idee Conad Percorso Qualità",
       "prezzo": "4,90",
       "unita": "210 g (105 g x 2)",
+      "note": "Prezzo per confezione",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Carne",
+      "prodotto": "Hamburger di Angus Sapori&Idee Conad Percorso Qualità",
+      "prezzo": "3,90",
+      "unita": "180 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di Salmone Superior Conad Percorso Qualità",
+      "prezzo": "19,90",
+      "unita": "al kg",
+      "note": "Allevato Senza Uso Di Antibiotici",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Ricciola Oceanica Conad Percorso Qualità",
+      "prezzo": "17,90",
+      "unita": "al kg",
+      "note": "Allevata Senza Uso Di Antibiotici",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Gambero Argentino Selvaggio Sapori&Idee Conad",
+      "prezzo": "6,90",
+      "unita": "400 g",
+      "negozio": "Conad Montefiore"
+    },
+    {
+      "categoria": "Pesce",
+      "prodotto": "Filetto di baccalà ammollato",
+      "prezzo": "19,90",
+      "unita": "al kg",
       "negozio": "Conad Montefiore"
     },
     {
@@ -2833,44 +3113,10 @@
     },
     {
       "categoria": "Latticini",
-      "prodotto": "Squacquerone di Romagna DOP Sapori&Dintorni Conad",
-      "prezzo": "2,69",
-      "unita": "280 g",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Latticini",
-      "prodotto": "Parmigiano Reggiano DOP Sapori&Dintorni Conad (min. 30 mesi)",
+      "prodotto": "Parmigiano Reggiano DOP Sapori&Dintorni Conad",
       "prezzo": "22,90",
       "unita": "al kg circa",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Verdura",
-      "prodotto": "Olive la Bella di Cerignola Sapori&Dintorni Conad (in salamoia)",
-      "prezzo": "1,99",
-      "unita": "550 g (sgocc. 320 g)",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Salmone Affumicato Sockeye Selvaggio dell’Alaska Sapori&Idee Conad",
-      "prezzo": "12,90",
-      "unita": "200 g",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Tartare di tonno Sapori&Idee Conad",
-      "prezzo": "4,50",
-      "unita": "100 g",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Code di Gamberi Argentini Sapori&Idee Conad",
-      "prezzo": "5,90",
-      "unita": "300 g",
+      "note": "Stagionatura minima 30 mesi",
       "negozio": "Conad Montefiore"
     },
     {
@@ -2881,27 +3127,6 @@
       "negozio": "Conad Montefiore"
     },
     {
-      "categoria": "Pesce",
-      "prodotto": "Filetto di Salmone Superior Conad Percorso Qualità (Senza Antibiotici)",
-      "prezzo": "19,90",
-      "unita": "al kg",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Pesce",
-      "prodotto": "Branzino (Allevato in mare Adriatico)",
-      "prezzo": "17,90",
-      "unita": "al kg",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Polpettone di Scottona con Speck Sapori&Idee Conad Percorso Qualità",
-      "prezzo": "6,90",
-      "unita": "500 g",
-      "negozio": "Conad Montefiore"
-    },
-    {
       "categoria": "Verdura",
       "prodotto": "Pomodoro il Camone Sapori&Dintorni Conad Percorso Qualità",
       "prezzo": "1,59",
@@ -2909,73 +3134,77 @@
       "negozio": "Conad Montefiore"
     },
     {
-      "categoria": "Carne",
-      "prodotto": "Pollo “Come una volta” Conad Percorso Qualità (Senza antibiotici)",
-      "prezzo": "6,90",
-      "unita": "al kg",
+      "categoria": "Verdura",
+      "prodotto": "Radicchio Rosso di Treviso IGP Tardivo Sapori&Dintorni Conad Percorso Qualità",
+      "prezzo": "3,49",
+      "unita": "350 g",
       "negozio": "Conad Montefiore"
     },
     {
       "categoria": "Verdura",
-      "prodotto": "Funghi Porcini Sapori&Idee Conad",
-      "prezzo": "3,69",
-      "unita": "200 g - 300 g (a seconda del taglio)",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Carne",
-      "prodotto": "Polpa posteriore di bovino adulto Scottona Conad Percorso Qualità",
-      "prezzo": "19,90",
-      "unita": "al kg",
+      "prodotto": "Legumi o Cereali Italiani Sapori&Dintorni Conad",
+      "prezzo": "1,49",
+      "unita": "300 g",
+      "note": "Fagioli Borlotti, Ceci, Farro Perlato, Fagioli cannellini",
       "negozio": "Conad Montefiore"
     },
     {
       "categoria": "Frutta",
-      "prodotto": "Mango Percorso Qualità Sapori&Idee Conad",
+      "prodotto": "Frutta esotica Sapori&Idee Conad (include Mango Percorso Qualità)",
       "prezzo": "Variabile",
-      "unita": "Pezzo/Peso variabile",
+      "unita": "Variabile",
       "sconto": "20%",
-      "note": "Sconto applicato alla Frutta Esotica Sapori&Idee Conad",
-      "negozio": "Conad Montefiore"
-    },
-    {
-      "categoria": "Verdura/Legumi",
-      "prodotto": "Legumi o Cereali Italiani Sapori&Dintorni Conad (Borlotti, Ceci, Farro, Cannellini)",
-      "prezzo": "1,49",
-      "unita": "300 g",
       "negozio": "Conad Montefiore"
     }
   ],
   "conadFlyers": [
     {
       "url": "https://www.conad.it/assets/common/volantini/cia/v2526p/2526P_NATALE_15_24dic_CONAD_RM.pdf",
-      "lastSync": "2025-12-19T15:00:41.163Z",
+      "lastSync": "2025-12-22T12:41:22.871Z",
       "label": "Conad Ponte Abbadesse - Buone Feste",
       "storeId": "008400"
     },
     {
       "url": "https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CnSST_SPF_Catalogo_Natale_1_24dic25.pdf",
-      "lastSync": "2025-12-19T15:01:47.830Z",
-      "label": "Conad Montefiore - Natale dal gusto che incanta",
-      "storeId": "007226"
+      "lastSync": "2025-12-22T12:41:36.813Z",
+      "label": "Conad Ponte Abbadesse - Natale dal gusto che incanta",
+      "storeId": "008400"
     },
     {
       "url": "https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CESENA_2528A_NATALE_15DIC_24DIC_WEB.pdf",
-      "lastSync": "2025-12-19T15:01:37.754Z",
+      "lastSync": "2025-12-22T12:41:51.108Z",
       "label": "Conad Montefiore - BUONE FESTE",
       "storeId": "007226"
     },
     {
+      "url": "https://www.conad.it/assets/common/volantini/cia/vspazi/SPAZIO_CnSST_SPF_Catalogo_Natale_1_24dic25.pdf",
+      "lastSync": "2025-12-22T12:42:05.097Z",
+      "label": "Conad Montefiore - Natale dal gusto che incanta",
+      "storeId": "007226"
+    },
+    {
       "url": "https://www.conad.it/assets/common/volantini/cia/v2525c/2525CAR_IdeeRegalo_Bassa_WEB.pdf",
-      "lastSync": "2025-12-19T15:02:15.785Z",
+      "lastSync": "2025-12-22T12:42:18.805Z",
       "label": "Conad Montefiore - CATALOGO IDEE REGALO 2025",
       "storeId": "007226"
     },
     {
       "url": "https://www.conad.it/assets/common/volantini/cia/v2525c/2525CAT_Giocattolo_Bassa_WEB.pdf",
-      "lastSync": "2025-12-19T15:02:26.348Z",
+      "lastSync": "2025-12-22T12:42:31.817Z",
       "label": "Conad Montefiore - CATALOGO GIOCATTOLO 2025",
       "storeId": "007226"
+    },
+    {
+      "url": "https://issuu.com/coal-srl/docs/promozione_dal_12_al_26_dicembre_9005517d18f328?fr=sMzM3ZDgzNDczNzE",
+      "lastSync": "2025-12-22T12:42:47.084Z",
+      "label": "Eccomi (Cesena)",
+      "storeId": "eccomi-cesena"
     }
-  ]
+  ],
+  "syncStatus": {
+    "state": "error",
+    "message": "Errore durante la sincronizzazione.",
+    "lastUpdate": 1766407367095
+  },
+  "pantryItems": []
 }
