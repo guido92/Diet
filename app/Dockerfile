@@ -20,6 +20,9 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV GOOGLE_API_KEY="build_placeholder"
+ENV DATA_FILE_PATH="/app/tracker_data.json"
+RUN echo "{}" > /app/tracker_data.json
 
 RUN npm run build
 
