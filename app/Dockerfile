@@ -36,6 +36,8 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV DATA_FILE_PATH /app/data/tracker_data.json
+ENV AUTH_TRUST_HOST true
+ENV AUTH_SECRET secret-for-dev-only-change-in-prod-if-needed
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

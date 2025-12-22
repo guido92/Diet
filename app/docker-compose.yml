@@ -19,6 +19,8 @@ services:
       - NODE_ENV=production
       - DATA_FILE_PATH=/app/data/tracker_data.json
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AUTH_TRUST_HOST=true
+      - AUTH_SECRET=secret-for-dev-only-change-in-prod-if-needed
     dns:
       - 8.8.8.8
       - 1.1.1.1
