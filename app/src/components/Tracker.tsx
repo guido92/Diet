@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AppData, updateWeight, updateTargetWeight, addSgarro } from '@/lib/data';
+import { AppData, updateWeight, addSgarro } from '@/lib/data';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -62,6 +62,7 @@ export default function Tracker({ data }: Props) {
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.5)',
                 segment: {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     borderColor: (ctx: any) => ctx.p0.parsed.y > ctx.p1.parsed.y ? '#10b981' : '#ef4444',
                 }
             },

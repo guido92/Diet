@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { processPDFAction } from '@/lib/ai';
-import { FileUp, Loader2, CheckCircle, AlertCircle, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { FileUp, Loader2, CheckCircle, AlertCircle, ChevronDown, X } from 'lucide-react';
 
 type Props = {
     userName: string;
@@ -31,7 +31,7 @@ export default function DietUploader({ userName }: Props) {
             } else {
                 setStatus({ type: 'error', msg: result.message });
             }
-        } catch (err) {
+        } catch {
             setStatus({ type: 'error', msg: 'Errore imprevisto durante il caricamento.' });
         } finally {
             setLoading(false);

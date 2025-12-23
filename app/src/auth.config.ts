@@ -18,6 +18,7 @@ export const authConfig = {
             // Protect all other pages
             return isLoggedIn;
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async session({ session, token }: any) {
             // Simple pass-through for rollback
             if (session.user && token.sub) {
@@ -26,6 +27,7 @@ export const authConfig = {
             }
             return session;
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async jwt({ token, user }: any) {
             if (user) {
                 token.sub = user.name;

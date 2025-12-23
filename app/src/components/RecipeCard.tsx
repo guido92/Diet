@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getRecipeAI } from '@/lib/ai';
+import Image from 'next/image';
 import { toggleMealEaten, rateMeal } from '@/lib/data';
 import { ChefHat, X, ExternalLink, ThumbsUp, ThumbsDown, CheckCircle, Circle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -40,7 +41,7 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
             const fullDescription = specificProtein ? `${description} (Usa: ${specificProtein})` : description;
             const result = await getRecipeAI(mealName, fullDescription, user);
             setRecipe(result);
-        } catch (e) {
+        } catch {
             setRecipe("Scusa, lo chef è in pausa. Riprova dopo.");
         }
         setLoading(false);
@@ -108,11 +109,11 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
 
                         {imageUrl && (
                             <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid #334155' }}>
-                                <img
+                                <Image
                                     src={imageUrl}
                                     alt={mealName}
-                                    referrerPolicy="no-referrer"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
                                 />
                             </div>
                         )}

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { generateCouplePlanPreviewAction } from '@/lib/ai';
 import { saveCouplePlansAction, WeeklyPlan } from '@/lib/data';
-import { Wand2, Save, X, Check } from 'lucide-react';
+import { Wand2, X, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { DAYS_MAP, ENGLISH_DAYS } from '@/lib/constants';
 
@@ -45,7 +45,7 @@ export default function CoupleManagerView({ initialMichaelPlan, initialJessicaPl
             } else {
                 alert('Errore generazione: ' + result.message);
             }
-        } catch (e) {
+        } catch {
             alert('Errore imprevisto durante la generazione.');
         }
         setGenerating(false);
@@ -58,7 +58,7 @@ export default function CoupleManagerView({ initialMichaelPlan, initialJessicaPl
             setPreviewMode(false);
             alert('Piani salvati correttamente!');
             router.refresh();
-        } catch (e) {
+        } catch {
             alert('Errore nel salvataggio.');
         }
         setSaving(false);
@@ -75,10 +75,10 @@ export default function CoupleManagerView({ initialMichaelPlan, initialJessicaPl
     const getMealName = (plan: WeeklyPlan, day: string, type: string) => {
         const dayPlan = plan[day];
         if (!dayPlan) return '-';
-        // @ts-ignore
+        // @ts-expect-error - Dynamic access to plan properties
         const mealId = dayPlan[type];
 
-        // @ts-ignore
+        // @ts-expect-error - Dynamic access to plan details
         const details = dayPlan[type + '_details'];
         if (details && details.name) return details.name;
 

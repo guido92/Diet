@@ -57,6 +57,7 @@ export async function GET() {
 
         return NextResponse.json(response);
     } catch (error) {
+        console.error('HA API Error:', error);
         return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
     }
 }

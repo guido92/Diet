@@ -12,16 +12,15 @@ import { getEccomiFlyerUrl } from './eccomi';
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-3-flash-preview',  // Experimental (Quota locked?)
-  'gemini-2.5-pro',          // Newest PRO
-  'gemini-2.5-flash',        // Newest Flash
-  'gemini-2.0-flash',        // Stable Fallback
+  'gemini-3-pro-preview',    // Top Tier (Smartest)
+  'gemini-2.5-pro',          // Stable High Quality
+  'gemini-2.0-pro-exp-02-05' // Backup Experimental
 ];
 
 // Team WORKER: High Speed & Quota
 const WORKER_MODELS = [
+  'gemini-3-flash-preview',
   'gemini-2.5-flash',
-  'gemini-2.0-flash-lite-preview-02-05',
   'gemini-2.0-flash',
 ];
 
@@ -47,8 +46,8 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
 
       console.log(`[AI ROTATION] ✅ Success with ${modelId}!`);
       return result.response.text();
-    } catch (e: any) {
-      const msg = e.message || String(e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.warn(`[AI ROTATION] ❌ Failed on ${modelId} (${i + 1}/${shuffledModels.length}): ${msg.substring(0, 100)}...`);
       errors.push(`${modelId}: ${msg}`);
 
@@ -78,9 +77,10 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
               const result = await model.generateContent(prompt);
               console.log(`[AI ROTATION] ✅ Success with ${modelId} (after retry)!`);
               return result.response.text();
-            } catch (retryError: any) {
+            } catch (retryError: unknown) {
+              const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
               console.warn(`[AI ROTATION] ❌ Retry Failed on ${modelId}. Moving on.`);
-              errors.push(`${modelId} (RETRY): ${retryError.message}`);
+              errors.push(`${modelId} (RETRY): ${retryMsg}`);
             }
           }
         }
@@ -95,6 +95,40 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
   }
 
   throw new Error(`ALL MODELS FAILED. Details: \n${errors.join('\n')}`);
+}
+
+/**
+ * Call Ollama (Local AI) as fallback
+ */
+async function callOllama(prompt: string): Promise<string> {
+  const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+  const model = process.env.OLLAMA_MODEL || 'llama3.2';
+
+  console.log(`[OLLAMA] Calling local model ${model} at ${baseUrl}...`);
+
+  try {
+    const response = await fetch(`${baseUrl}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        prompt: prompt + "\n\nRISPONDI SOLO JSON.",
+        stream: false,
+        format: "json"
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.response;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[OLLAMA] Failed:', msg);
+    throw e;
+  }
 }
 
 /**
@@ -178,7 +212,7 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
     const responseText = (await callGeminiSafe(prompt, CHEF_MODELS)).trim();
     const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     plan = JSON.parse(jsonStr);
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('AI Plan Generation Error (Fallback to Local):', e);
     // Fallback logic enabled: Local Random Plan
     plan = generateLocalPlan(userGuidelines);
@@ -530,6 +564,12 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       // 1. STANDARD CONAD PDF SYNC
       for (const store of CONAD_STORES) {
         console.log(`Smart Sync: Checking store ${store.name}...`);
+
+        // STATUS UPDATE
+        const currentData = await getData();
+        currentData.syncStatus = { state: 'running', message: `Controllo volantini ${store.name}...`, lastUpdate: Date.now() };
+        await saveData(currentData);
+
         const storePage = await fetch(store.url).then(r => r.text());
         const flyerLinks = storePage.match(/\/volantini\/cia-[^"'\s<>]+/g);
         if (!flyerLinks) continue;
@@ -555,15 +595,28 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
 
             // Parse
             console.log(`Parsing PDF ${pdfUrl}...`);
+
+            // STATUS UPDATE
+            const parsingData = await getData();
+            parsingData.syncStatus = { state: 'running', message: `Parsing PDF: ${flyerTitle}...`, lastUpdate: Date.now() };
+            await saveData(parsingData);
+
             try {
               const pdfResponse = await fetch(pdfUrl, {
                 headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', 'Accept': 'application/pdf' }
               });
               if (pdfResponse.ok) {
                 const buffer = Buffer.from(await pdfResponse.arrayBuffer());
-                const pdf = require('pdf-parse'); // Lazy load
+                // Lazy load pdf-parse
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
+                const pdf = require('pdf-parse');
                 if (typeof pdf === 'function') {
                   const pdfData = await pdf(buffer);
+                  // STATUS UPDATE
+                  const extractingData = await getData();
+                  extractingData.syncStatus = { state: 'running', message: `Estrazione offerte: ${flyerTitle}...`, lastUpdate: Date.now() };
+                  await saveData(extractingData);
+
                   if (pdfData.text && pdfData.text.length > 200) {
                     const offers = await extractOffersAI(pdfData.text, store.name);
                     if (offers && offers.length > 0) {
@@ -583,6 +636,11 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       // 2. ECCOMI SYNC
       // 2. ECCOMI SYNC (Official Site)
       console.log(`Smart Sync: Checking Eccomi Supermercati...`);
+      // STATUS UPDATE
+      const eccomiData = await getData();
+      eccomiData.syncStatus = { state: 'running', message: `Controllo Eccomi Supermercati...`, lastUpdate: Date.now() };
+      await saveData(eccomiData);
+
       try {
         const eccomiUrl = await getEccomiFlyerUrl();
         if (eccomiUrl) {
@@ -591,7 +649,7 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
           data.conadFlyers.push({ url: eccomiUrl, lastSync: new Date().toISOString(), label: 'Eccomi (Cesena)', storeId: 'eccomi-cesena' });
           flyersFound++;
         }
-      } catch (e) { console.error('Eccomi fail', e); }
+      } catch (e: unknown) { console.error('Eccomi fail', e); }
 
       // SAVE SUCCESS
       const finalData = await getData(); // Re-read to be safe
@@ -606,7 +664,7 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       revalidatePath('/shopping');
       console.log('--- BACKGROUND SYNC FINISHED ---');
 
-    } catch (bgError: any) {
+    } catch (bgError: unknown) {
       console.error('--- BACKGROUND SYNC ERROR ---', bgError);
       const errData = await getData();
       errData.syncStatus = { state: 'error', message: 'Errore durante la sincronizzazione.', lastUpdate: Date.now() };
@@ -628,6 +686,7 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
     // Lazy load pdf-parse
     let pdf;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       pdf = require('pdf-parse');
     } catch (e) {
       return { success: false, message: 'Sistema PDF non disponibile.', count: 0 };
@@ -667,51 +726,6 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
 /**
  * Scrapes a Web Viewer (images) and uses Multimodal AI.
  */
-async function processWebViewerAction(url: string, storeName: string): Promise<ConadOffer[]> {
-  try {
-    console.log(`Scraping Web Viewer: ${url}`);
-    const html = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    }).then(r => r.text());
-
-    // EXTRACT IMAGE URLs (Naive scrape of all JPGs served from CDN)
-    // We look for the 'img.offers-cdn.net/...' pattern
-    const regex = /https:\/\/img\.offers-cdn\.net\/[a-zA-Z0-9\/\.\-_]+\.jpg/g;
-    const matches = html.match(regex);
-
-    if (!matches || matches.length === 0) {
-      console.log('No images found in web viewer.');
-      return [];
-    }
-
-    // De-duplicate and filter (maybe top 10 unique large images?)
-    // Often these sites have thumbnails and full res. We try to grab them all 
-    // and let AI sort it, or check for size indicators in URL if possible.
-    const uniqueImages = Array.from(new Set(matches)).slice(0, 8); // Limit to first 8 pages to save tokens/time
-
-    console.log(`Found ${uniqueImages.length} images. Analyzing with Gemini Vision...`);
-
-    // Download Images
-    const imageBuffers: Buffer[] = [];
-    for (const imgUrl of uniqueImages) {
-      try {
-        const buff = await fetch(imgUrl).then(r => r.arrayBuffer());
-        imageBuffers.push(Buffer.from(buff));
-      } catch (e) {
-        console.error(`Failed to download image ${imgUrl}`);
-      }
-    }
-
-    if (imageBuffers.length === 0) return [];
-
-    return await extractOffersFromImagesAI(imageBuffers);
-
-  } catch (e) {
-    console.error('Web Viewer Scraping Error:', e);
-    return [];
-  }
-}
-
 // 2. Extract Offers using Gemini Vision
 async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
   if (images.length === 0) return [];
@@ -755,7 +769,7 @@ async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]
     const responseText = result.response.text();
     const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(jsonStr);
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Gemini Vision Error:', e);
     return [];
   }
@@ -791,11 +805,102 @@ async function extractOffersAI(text: string, storeName: string): Promise<ConadOf
   try {
     const responseText = (await callGeminiSafe(prompt, WORKER_MODELS)).trim();
     const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(jsonStr);
-  } catch (e) {
-    console.error('Offers Extraction Error:', e);
-    return [];
+    const result = JSON.parse(jsonStr);
+    if (!Array.isArray(result) || result.length === 0) throw new Error('AI returned empty list');
+    return result;
+    return extractOffersLocal(text, storeName);
+  } catch (e: unknown) {
+    console.error('Offers Extraction AI Failed:', e);
+
+    // --- OLLAMA FALLBACK ---
+    console.log('Trying Ollama Fallback...');
+    try {
+      const ollamaText = await callOllama(prompt);
+      const jsonStr = ollamaText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const result = JSON.parse(jsonStr);
+      if (Array.isArray(result) && result.length > 0) {
+        console.log(`[OLLAMA] Success! Extracted ${result.length} offers.`);
+        return result;
+      }
+    } catch (ollamaErr) {
+      console.warn('[OLLAMA] Fallback also failed:', ollamaErr);
+    }
+    // -----------------------
+
+    console.log('Falling back to Local Regex Parser...');
+    return extractOffersLocal(text, storeName);
   }
+}
+
+/**
+ * Robust Local Regex Fallback for Conad Flyers
+ */
+function extractOffersLocal(text: string, storeName: string): ConadOffer[] {
+  const offers: ConadOffer[] = [];
+
+  // Clean text
+  const cleanedLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+
+  // Regex to find prices like "€ 1,99" or "1,99€" or "1,99" at end of line
+  const priceRegex = /€?\s?(\d+,\d{2})\s?€?/;
+
+  // Keywords to categorize
+  const categoryKeywords: Record<string, string> = {
+    'Carne': 'pollo,tacchino,bovino,suino,tagliata,macinato,salsiccia,hamburger',
+    'Pesce': 'branzino,orata,salmone,merluzzo,gamberi,pesce,filetti',
+    'Frutta': 'mele,pere,banane,arance,limoni,mandarini,uva,kivi,ananas',
+    'Verdura': 'insalata,pomodori,zucchine,melanzane,peperoni,patate,carote,spinaci',
+    'Latticini': 'latte,yogurt,mozzarella,formaggio,parmigiano,grana,burro,ricotta',
+    'Dispensa': 'pasta,riso,olio,tonno,caffè,biscotti,passata,fagioli,legumi'
+  };
+
+  for (let i = 0; i < cleanedLines.length; i++) {
+    const line = cleanedLines[i];
+    const priceMatch = line.match(priceRegex);
+
+    if (priceMatch) {
+      const price = `€ ${priceMatch[1]}`;
+      // Basic assumption: Product name is likely in this line or previous line
+      // Simplification: Take the part of the line BEFORE the price as info
+      let potentialName = line.replace(priceRegex, '').trim();
+
+      // If name is too short, look at previous line
+      if (potentialName.length < 5 && i > 0) {
+        potentialName = cleanedLines[i - 1] + ' ' + potentialName;
+      }
+
+      // Filter Junk
+      if (potentialName.match(/kg|gr|grammi|al pezzo|conad|carta insieme/i)) {
+        // likely unit or noise, but keep as part of name for now to be safe
+      }
+
+      // Determine Category
+      let category = 'Altro';
+      const lowerName = potentialName.toLowerCase();
+
+      for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+        if (keywords.split(',').some(k => lowerName.includes(k))) {
+          category = cat;
+          break;
+        }
+      }
+
+      // Add if it looks like food
+      if (category !== 'Altro' || potentialName.length > 10) {
+        offers.push({
+          categoria: category,
+          prodotto: potentialName,
+          prezzo: price,
+          unita: 'pz/kg', // Generic
+          negozio: storeName,
+          note: 'Estratto locale'
+        });
+      }
+    }
+  }
+
+  console.log(`[LOCAL PARSER] Extracted ${offers.length} offers via Regex.`);
+  return offers;
 }
 
 export async function processPDFAction(formData: FormData): Promise<{ success: boolean; message: string }> {
@@ -809,6 +914,7 @@ export async function processPDFAction(formData: FormData): Promise<{ success: b
     // Lazy load pdf-parse
     let pdf;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       pdf = require('pdf-parse');
     } catch (e) {
       return { success: false, message: 'Sistema PDF non disponibile.' };

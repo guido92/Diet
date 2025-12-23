@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WeeklyPlan, ManualItem, ConadOffer, addManualShoppingItem, removeManualShoppingItem, toggleManualShoppingItem, clearActiveOffers, togglePantryItem, getSyncStatusAction } from '@/lib/data';
+import { WeeklyPlan, ManualItem, ConadOffer, addManualShoppingItem, removeManualShoppingItem, toggleManualShoppingItem, togglePantryItem, getSyncStatusAction } from '@/lib/data';
 import { MealOption, getSeasonalFruit, getSeasonalVeg } from '@/lib/guidelines';
-import { CheckSquare, Square, Plus, Trash2, ExternalLink, Zap, Percent, RefreshCcw, Search, Sparkles, ChevronDown, ChevronUp, Package, Share2, Archive } from 'lucide-react';
+import { CheckSquare, Square, Plus, Trash2, ExternalLink, Zap, Percent, RefreshCcw, Search, Sparkles, ChevronDown, ChevronUp, Package, Share2, Archive, Loader2 } from 'lucide-react';
 import { processFlyerUrlAction, smartSyncOffersAction } from '@/lib/ai';
 import { PIECE_WEIGHTS } from '@/lib/conversions';
 
@@ -23,13 +23,15 @@ type Props = {
     pantryItems: string[];
 };
 
-export default function ShoppingList({ profiles, manualItems, conadFlyers, activeOffers, lastUpdate, pantryItems = [] }: Props) {
+export default function ShoppingList({ profiles, manualItems, conadFlyers, activeOffers, pantryItems = [] }: Props) {
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
     const [newItemName, setNewItemName] = useState('');
     const [newItemAmount, setNewItemAmount] = useState('');
     const [newItemPrice, setNewItemPrice] = useState('');
     const [loading, setLoading] = useState(false);
-    const [flyerInput, setFlyerInput] = useState('');
+    const [syncStatusMsg, setSyncStatusMsg] = useState('');
+
+
 
     // Pantry Logic UI State
     const [showPantry, setShowPantry] = useState(false);
@@ -59,12 +61,12 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
         const seasonalVeg = getSeasonalVeg();
 
         profiles.forEach(({ name: userName, plan, guidelines }) => {
-            Object.values(plan).forEach((day: any) => {
+            Object.values(plan).forEach((day) => {
                 const mealTypes = ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner'] as const;
                 mealTypes.forEach(type => {
                     const mealId = day[type];
-                    // @ts-ignore
-                    const details = day[`${type}_details`];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const details = (day as Record<string, any>)[`${type}_details`];
 
                     if (mealId && typeof mealId === 'string') {
                         const meal = guidelines.find(g => g.id === mealId);
@@ -173,18 +175,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
         window.location.reload();
     };
 
-    const handleSyncFlyer = async () => {
-        if (!flyerInput) return;
-        setLoading(true);
-        try {
-            const res = await processFlyerUrlAction(flyerInput);
-            alert(res.message);
-        } catch (e) {
-            alert('Errore durante la scansione del volantino');
-        }
-        setLoading(false);
-        window.location.reload();
-    };
+
 
     const handleAddOffer = async (offer: ConadOffer) => {
         setLoading(true);
@@ -196,13 +187,16 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
 
     const handleSmartSync = async () => {
         setLoading(true);
+        setSyncStatusMsg('Avvio sincronizzazione...');
         try {
             const res = await smartSyncOffersAction();
             if (res.success) {
                 // Polling Loop
                 while (true) {
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 1000)); // Faster polling (1s)
                     const status = await getSyncStatusAction();
+
+                    if (status.message) setSyncStatusMsg(status.message);
 
                     if (status.state === 'success') {
                         alert(status.message);
@@ -224,6 +218,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
             alert('Errore durante la comunicazione col server.');
             setLoading(false);
         }
+        setSyncStatusMsg('');
     };
 
     const getPackInfo = (name: string, amount: number, subItems?: Record<string, number>) => {
@@ -272,6 +267,12 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             {loading ? 'Sincronizzazione...' : 'Aggiorna Offerte'}
                         </button>
                     </div>
+                    {/* Status Feedback */}
+                    {loading && syncStatusMsg && (
+                        <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.2)' }}>
+                            <Loader2 className="animate-spin" size={14} /> {syncStatusMsg}
+                        </div>
+                    )}
 
                     {conadFlyers.length > 0 && (
                         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
@@ -450,7 +451,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             ))}
                             {filteredOffers.length === 0 && (
                                 <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontSize: '0.9rem' }}>
-                                    Nessuna offerta trovata per "{searchTerm}" in questa categoria.
+                                    Nessuna offerta trovata per &quot;{searchTerm}&quot; in questa categoria.
                                 </div>
                             )}
                         </div>

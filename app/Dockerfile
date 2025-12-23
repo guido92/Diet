@@ -24,8 +24,7 @@ ENV GOOGLE_API_KEY="build_placeholder"
 ENV DATA_FILE_PATH="/app/tracker_data.json"
 RUN echo "{}" > /app/tracker_data.json
 
-# Limit memory to 2GB (adjust as needed if server is tiny)
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 
 RUN npm run build
 

@@ -29,8 +29,7 @@ export async function refreshSingleMeal(dayName: string, mealType: string) {
     if (!user.plan || !user.plan[dayName]) return;
 
     const currentPlan = user.plan[dayName];
-    // @ts-ignore
-    const currentMealId = currentPlan[mealType];
+    const currentMealId = (currentPlan as Record<string, any>)[mealType];
     const isTraining = currentPlan.training;
     const season = getCurrentSeason();
 
@@ -83,10 +82,12 @@ export async function refreshSingleMeal(dayName: string, mealType: string) {
     }
 
     // Update Plan
-    // @ts-ignore
-    user.plan[dayName][mealType] = newMeal.id;
-    // @ts-ignore
-    user.plan[dayName][`${mealType}_details`] = newDetails;
+    if (user.plan && user.plan[dayName]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (user.plan[dayName] as Record<string, any>)[mealType] = newMeal.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (user.plan[dayName] as Record<string, any>)[`${mealType}_details`] = newDetails;
+    }
 
     await saveData(data);
     revalidatePath('/');
@@ -287,11 +288,11 @@ export async function getData(): Promise<AppData> {
         data.users.Jessica.guidelines = GUIDELINES;
 
         return data;
-    } catch (error) {
+    } catch {
         try {
             await saveData(DEFAULT_DATA);
-        } catch (writeError) {
-            console.warn('Could not save default data (likely build environment):', writeError);
+        } catch {
+            console.warn('Could not save default data (likely build environment)');
         }
         return DEFAULT_DATA;
     }

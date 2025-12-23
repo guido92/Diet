@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { GUIDELINES, MealOption, getCurrentSeason } from '@/lib/guidelines';
+import { MealOption, getCurrentSeason } from '@/lib/guidelines';
 import { DailyPlan, WeeklyPlan, saveWeeklyPlan, refreshSingleMeal } from '@/lib/data';
 import { ChevronDown, ChevronUp, Save, Wand2, BookOpen, ShoppingCart, ExternalLink, Edit3, List, RefreshCcw } from 'lucide-react';
-import { generateWeeklyPlanAI, generateBothPlansAction } from '@/lib/ai';
+import { generateWeeklyPlanAI } from '@/lib/ai';
 import { getPieceLabel } from '@/lib/conversions';
 import Link from 'next/link';
 import { ConadOffer } from '@/lib/data';
@@ -80,7 +80,7 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
             // OR we should have received the new plan from the server action (if I updated expected return type).
             // For now, reload is safest to sync everything including active offers etc.
             window.location.reload();
-        } catch (e) {
+        } catch {
             alert('Errore aggiornamento pasto');
         }
         setSaving(false);
@@ -323,9 +323,9 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
                                                             <div style={{ color: '#facc15', fontWeight: 'bold', fontSize: '0.9rem' }}>
                                                                 👨‍🍳 {chefDetails.name}
                                                             </div>
-                                                            {(chefDetails as any).recipeUrl && (
+                                                            {(chefDetails.recipeUrl) && (
                                                                 <a
-                                                                    href={(chefDetails as any).recipeUrl}
+                                                                    href={chefDetails.recipeUrl}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     style={{ color: '#facc15', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 'bold', textDecoration: 'none' }}

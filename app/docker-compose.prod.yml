@@ -15,14 +15,35 @@ services:
     restart: always
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATA_FILE_PATH=/app/data/tracker_data.json
-    volumes:
-      - diet_data:/app/data
     depends_on:
       init-perms:
         condition: service_completed_successfully
+      ollama-init:
+        # Wait for model to be pulled
+        condition: service_completed_successfully
+    environment:
+      - NODE_ENV=production
+      - DATA_FILE_PATH=/app/data/tracker_data.json
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434" # Optional: Expose to host for debug
+
+  ollama-init:
+    image: curlimages/curl
+    container_name: ollama-puller
+    depends_on:
+      - ollama
+    command: >
+      sh -c " echo 'Waiting for Ollama...'; until curl -s http://ollama:11434/api/tags >/dev/null; do sleep 2; done; echo 'Ollama is up. Pulling llama3.2...'; curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}'; echo 'Model pulled!'; "
 
 volumes:
   diet_data:
+  ollama_data:
