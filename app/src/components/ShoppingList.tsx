@@ -56,7 +56,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
     }, [activeOffers, searchTerm, selectedCategory]);
 
     const aggregatedIngredients = useMemo(() => {
-        const totals: Record<string, { amount: number; unit: string; owners: Set<string>; subItems?: Record<string, number> }> = {};
+        const totals: Record<string, { amount: number; unit: string; owners: Set<string>; subItems?: Record<string, number>; store?: string }> = {};
         const seasonalFruit = getSeasonalFruit();
         const seasonalVeg = getSeasonalVeg();
 
@@ -76,24 +76,22 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
 
                             // --- SMART SHOPPING LOGIC ---
 
-                            // 1. Specific Overrides (E.g. "Riso" instead of "Carboidrati", "Orata" instead of "Pesce")
+                            // 1. Specific Overrides
                             if (details) {
                                 if (ing.name === 'Frutta di Stagione' && details.specificFruit) itemName = details.specificFruit;
                                 else if (ing.name.includes('Verdura') && details.specificVeg) itemName = details.specificVeg;
                                 else if (ing.name === 'Carboidrati' && details.specificCarb) itemName = details.specificCarb;
                                 else if (ing.name.includes('Proteina') && details.specificProtein) itemName = details.specificProtein;
-                                // Fallback: If generic name matches a category we have specific detail for
                                 else if (ing.name === 'Carboidrati' && details.name && (details.name.includes('Riso') || details.name.includes('Pasta'))) {
-                                    // Weak inference if specificCarb is missing but name hints it
+                                    // Weak inference
                                 }
                             }
 
-                            // 2. Seasonal Fallbacks if still generic
+                            // 2. Seasonal Fallbacks
                             if (itemName === 'Frutta di Stagione') { itemName = 'Frutta Mista'; subList = seasonalFruit; }
                             else if (itemName.includes('Verdura di Stagione')) { itemName = 'Verdure Miste'; subList = seasonalVeg; }
 
                             // 3. Normalization (Start Case + Trim)
-                            // "Petto di pollo" -> "Petto Di Pollo"
                             itemName = itemName
                                 .toLowerCase()
                                 .split(' ')
@@ -101,8 +99,29 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                                 .join(' ')
                                 .trim();
 
-                            // 4. Accumulate
-                            if (!totals[itemName]) totals[itemName] = { amount: 0, unit: ing.unit, owners: new Set(), subItems: {} };
+                            // 4. Store Detection
+                            let detectedStore: string | undefined;
+
+                            // A. From Text explicit tag (e.g. "Pomodori (Offerta Conad)")
+                            if (itemName.toLowerCase().includes('conad')) detectedStore = 'Conad';
+                            else if (itemName.toLowerCase().includes('eccomi')) detectedStore = 'Eccomi';
+
+                            // B. Match against Active Offers (Fuzzy)
+                            if (!detectedStore) {
+                                const match = activeOffers.find(o =>
+                                    itemName.toLowerCase().includes(o.prodotto.toLowerCase()) ||
+                                    o.prodotto.toLowerCase().includes(itemName.toLowerCase())
+                                );
+                                if (match) {
+                                    if (match.negozio?.toLowerCase().includes('conad')) detectedStore = 'Conad';
+                                    else if (match.negozio?.toLowerCase().includes('eccomi')) detectedStore = 'Eccomi';
+                                }
+                            }
+
+                            // 5. Accumulate
+                            if (!totals[itemName]) totals[itemName] = { amount: 0, unit: ing.unit, owners: new Set(), subItems: {}, store: detectedStore };
+                            else if (detectedStore && !totals[itemName].store) totals[itemName].store = detectedStore; // Upgrade to specific store if found
+
                             totals[itemName].amount += ing.amount;
                             totals[itemName].owners.add(userName);
 
@@ -116,7 +135,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
             });
         });
         return Object.entries(totals).sort((a, b) => a[0].localeCompare(b[0]));
-    }, [profiles]);
+    }, [profiles, activeOffers]);
 
     const activeList = useMemo(() => aggregatedIngredients.filter(([name]) => !pantryItems.includes(name)), [aggregatedIngredients, pantryItems]);
     const inPantryList = useMemo(() => aggregatedIngredients.filter(([name]) => pantryItems.includes(name)), [aggregatedIngredients, pantryItems]);
@@ -481,41 +500,92 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                     </button>
                 </div>
 
-                <div className="card">
-                    {activeList.map(([name, data]) => {
-                        const isChecked = checkedItems[name];
-                        const packSuggestion = getPackInfo(name, data.amount, data.subItems);
-                        const matchingOffer = activeOffers.find(o => o.prodotto.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(o.prodotto.toLowerCase()));
+                <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
+                    {(() => {
+                        // Group Items
+                        const groups: Record<string, typeof activeList> = {
+                            'Conad': [],
+                            'Eccomi': [],
+                            'Generico': []
+                        };
 
-                        return (
-                            <div key={name} className="flex-between" style={{ padding: '12px 0', borderBottom: '1px solid #334155', opacity: isChecked ? 0.5 : 1 }}>
-                                <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ textDecoration: isChecked ? 'line-through' : 'none', fontWeight: 600 }}>{name}</span>
-                                        {matchingOffer && <Percent size={14} color="#eab308" />}
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                                        <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 700 }}>{data.amount}{data.unit}</span>
-                                        {packSuggestion && <span style={{ fontSize: '0.75rem', background: '#0f172a', padding: '2px 8px', borderRadius: '4px', border: '1px solid #334155' }}>💡 {packSuggestion}</span>}
-                                        {matchingOffer && (
-                                            <span style={{ fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
-                                                PROMO {matchingOffer.negozio ? `(${matchingOffer.negozio})` : ''}: {matchingOffer.prezzo}
-                                            </span>
-                                        )}
-                                        <span style={{ fontSize: '0.65rem', color: '#64748b' }}>({Array.from(data.owners).join(' + ')})</span>
+                        activeList.forEach((item) => {
+                            const [_, data] = item;
+                            const store = data.store || 'Generico';
+                            if (!groups[store]) groups[store] = [];
+                            groups[store].push(item);
+                        });
+
+                        // Render Sections
+                        return Object.entries(groups).map(([storeName, items]) => {
+                            if (items.length === 0) return null;
+
+                            let headerColor = '#94a3b8';
+                            let headerIcon = <CheckSquare size={16} />;
+                            let bg = '#1e293b';
+
+                            if (storeName === 'Conad') {
+                                headerColor = '#eab308';
+                                headerIcon = <Zap size={16} />;
+                                bg = 'rgba(234, 179, 8, 0.05)';
+                            } else if (storeName === 'Eccomi') {
+                                headerColor = '#06b6d4'; // Cyan
+                                headerIcon = <Sparkles size={16} />;
+                                bg = 'rgba(6, 182, 212, 0.05)';
+                            }
+
+                            return (
+                                <div key={storeName} style={{ marginBottom: '16px', background: bg, borderRadius: '12px', border: `1px solid ${storeName === 'Generico' ? '#334155' : headerColor + '40'}` }}>
+                                    {storeName !== 'Generico' && (
+                                        <div style={{ padding: '10px 16px', borderBottom: `1px solid ${headerColor}20`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ color: headerColor }}>{headerIcon}</span>
+                                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                {storeName}
+                                            </h4>
+                                        </div>
+                                    )}
+
+                                    <div style={{ padding: '0 16px' }}>
+                                        {items.map(([name, data]) => {
+                                            const isChecked = checkedItems[name];
+                                            const packSuggestion = getPackInfo(name, data.amount, data.subItems);
+                                            const matchingOffer = activeOffers.find(o => o.prodotto.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(o.prodotto.toLowerCase()));
+
+                                            return (
+                                                <div key={name} className="flex-between" style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', opacity: isChecked ? 0.5 : 1 }}>
+                                                    <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <span style={{ textDecoration: isChecked ? 'line-through' : 'none', fontWeight: 600 }}>{name}</span>
+                                                            {matchingOffer && <Percent size={14} color="#eab308" />}
+                                                        </div>
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                                                            <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 700 }}>{data.amount}{data.unit}</span>
+                                                            {packSuggestion && <span style={{ fontSize: '0.75rem', background: '#0f172a', padding: '2px 8px', borderRadius: '4px', border: '1px solid #334155' }}>💡 {packSuggestion}</span>}
+                                                            {matchingOffer && (
+                                                                <span style={{ fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
+                                                                    PROMO {matchingOffer.negozio ? `(${matchingOffer.negozio})` : ''}: {matchingOffer.prezzo}
+                                                                </span>
+                                                            )}
+                                                            <span style={{ fontSize: '0.65rem', color: '#64748b' }}>({Array.from(data.owners).join(' + ')})</span>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                        <button onClick={(e) => { e.stopPropagation(); togglePantry(name); }} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }} title="Metti in dispensa">
+                                                            <Archive size={18} />
+                                                        </button>
+                                                        <div onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))} style={{ cursor: 'pointer' }}>
+                                                            {isChecked ? <CheckSquare color="#10b981" /> : <Square color="#94a3b8" />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <button onClick={(e) => { e.stopPropagation(); togglePantry(name); }} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }} title="Metti in dispensa">
-                                        <Archive size={18} />
-                                    </button>
-                                    <div onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))} style={{ cursor: 'pointer' }}>
-                                        {isChecked ? <CheckSquare color="#10b981" /> : <Square color="#94a3b8" />}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        });
+                    })()}
+
                     {activeList.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Nulla da comprare (tutto in dispensa?)</div>}
                 </div>
             </div>

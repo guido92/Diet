@@ -100,7 +100,10 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
  * Call Ollama (Local AI) as fallback
  */
 async function callOllama(prompt: string): Promise<string> {
-  const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+  // In production (Docker), localhost won't work for reaching sibling containers.
+  // Default to 'ollama' hostname if not specified.
+  const defaultHost = process.env.NODE_ENV === 'production' ? 'http://ollama:11434' : 'http://localhost:11434';
+  const baseUrl = process.env.OLLAMA_BASE_URL || defaultHost;
   const model = process.env.OLLAMA_MODEL || 'llama3.2';
 
   console.log(`[OLLAMA] Calling local model ${model} at ${baseUrl}...`);
@@ -824,7 +827,6 @@ async function extractOffersAI(text: string, storeName: string): Promise<ConadOf
     const result = JSON.parse(jsonStr);
     if (!Array.isArray(result) || result.length === 0) throw new Error('AI returned empty list');
     return result;
-    return extractOffersLocal(text, storeName);
   } catch (e: unknown) {
     console.error('Offers Extraction AI Failed:', e);
 

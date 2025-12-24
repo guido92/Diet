@@ -15,6 +15,7 @@
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.562.0",

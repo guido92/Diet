@@ -13,6 +13,7 @@ export async function searchGialloZafferano(query: string): Promise<RecipeResult
 
         const searchUrl = `https://www.giallozafferano.it/ricerca-ricette/${cleanQuery}`;
 
+        console.log(`[SCRAPER] DEBUG: Fetching ${searchUrl}...`);
         // Fetch Search Page
         const response = await fetch(searchUrl, {
             headers: {
@@ -20,7 +21,11 @@ export async function searchGialloZafferano(query: string): Promise<RecipeResult
             }
         });
 
-        if (!response.ok) return null;
+        console.log(`[SCRAPER] DEBUG: Response status: ${response.status}`);
+        if (!response.ok) {
+            console.warn(`[SCRAPER] Failed to fetch ${searchUrl}: ${response.status} ${response.statusText}`);
+            return null;
+        }
 
         const html = await response.text();
         const $ = cheerio.load(html);
