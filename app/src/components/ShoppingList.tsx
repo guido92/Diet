@@ -107,15 +107,19 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             else if (itemName.toLowerCase().includes('eccomi')) detectedStore = 'Eccomi';
 
                             // B. Match against Active Offers (Fuzzy)
-                            if (!detectedStore) {
-                                const match = activeOffers.find(o =>
-                                    itemName.toLowerCase().includes(o.prodotto.toLowerCase()) ||
-                                    o.prodotto.toLowerCase().includes(itemName.toLowerCase())
-                                );
-                                if (match) {
-                                    if (match.negozio?.toLowerCase().includes('conad')) detectedStore = 'Conad';
-                                    else if (match.negozio?.toLowerCase().includes('eccomi')) detectedStore = 'Eccomi';
-                                }
+                            // PRIORITIZE SPECIFIC MATCH over generic text tag
+                            const match = activeOffers.find(o =>
+                                itemName.toLowerCase().includes(o.prodotto.toLowerCase()) ||
+                                o.prodotto.toLowerCase().includes(itemName.toLowerCase())
+                            );
+
+                            if (match && match.negozio) {
+                                // Use the exact store name from the offer (e.g. "Conad Montefiore")
+                                detectedStore = match.negozio;
+                            } else if (!detectedStore) {
+                                // Fallback to generic text inference only if no specific offer found
+                                if (itemName.toLowerCase().includes('conad')) detectedStore = 'Conad (Generico)';
+                                else if (itemName.toLowerCase().includes('eccomi')) detectedStore = 'Eccomi';
                             }
 
                             // 5. Accumulate
@@ -503,11 +507,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                 <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
                     {(() => {
                         // Group Items
-                        const groups: Record<string, typeof activeList> = {
-                            'Conad': [],
-                            'Eccomi': [],
-                            'Generico': []
-                        };
+                        const groups: Record<string, typeof activeList> = {};
 
                         activeList.forEach((item) => {
                             const [_, data] = item;
@@ -516,19 +516,27 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             groups[store].push(item);
                         });
 
+                        // Sort Keys: Put "Generico" last, others alphabetical
+                        const sortedKeys = Object.keys(groups).sort((a, b) => {
+                            if (a === 'Generico') return 1;
+                            if (b === 'Generico') return -1;
+                            return a.localeCompare(b);
+                        });
+
                         // Render Sections
-                        return Object.entries(groups).map(([storeName, items]) => {
+                        return sortedKeys.map((storeName) => {
+                            const items = groups[storeName];
                             if (items.length === 0) return null;
 
                             let headerColor = '#94a3b8';
                             let headerIcon = <CheckSquare size={16} />;
                             let bg = '#1e293b';
 
-                            if (storeName === 'Conad') {
+                            if (storeName.includes('Conad')) {
                                 headerColor = '#eab308';
                                 headerIcon = <Zap size={16} />;
                                 bg = 'rgba(234, 179, 8, 0.05)';
-                            } else if (storeName === 'Eccomi') {
+                            } else if (storeName.includes('Eccomi')) {
                                 headerColor = '#06b6d4'; // Cyan
                                 headerIcon = <Sparkles size={16} />;
                                 bg = 'rgba(6, 182, 212, 0.05)';
