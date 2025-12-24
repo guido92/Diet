@@ -12,16 +12,16 @@ import { getEccomiFlyerUrl } from './eccomi';
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-3-pro-preview',    // Top Tier (Smartest)
-  'gemini-2.5-pro',          // Stable High Quality
-  'gemini-2.0-pro-exp-02-05' // Backup Experimental
+  'gemini-3-pro-preview',    // Top Tier (User Requested)
+  'gemini-2.5-pro',          // New Stable High Quality
+  'gemini-2.0-flash'         // Fast Backup
 ];
 
 // Team WORKER: High Speed & Quota
 const WORKER_MODELS = [
-  'gemini-3-flash-preview',
   'gemini-2.5-flash',
   'gemini-2.0-flash',
+  'gemini-1.5-flash'
 ];
 
 /**
@@ -213,9 +213,18 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
     const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     plan = JSON.parse(jsonStr);
   } catch (e: unknown) {
-    console.error('AI Plan Generation Error (Fallback to Local):', e);
-    // Fallback logic enabled: Local Random Plan
-    plan = generateLocalPlan(userGuidelines);
+    console.warn('Gemini Plan Generation Failed. Attempting Ollama Fallback...', e);
+    try {
+      // OLLAMA FALLBACK
+      const ollamaResponse = await callOllama(prompt);
+      const jsonStr = ollamaResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+      plan = JSON.parse(jsonStr);
+      console.log('✅ Ollama Plan Generation Successful');
+    } catch (ollamaError) {
+      console.error('Ollama Plan Generation Failed. Falling back to Local Random Plan.', ollamaError);
+      // Fallback logic enabled: Local Random Plan
+      plan = generateLocalPlan(userGuidelines);
+    }
   }
 
   // 1. Sanitize (Strict Rules) with Ownership Check
@@ -256,8 +265,16 @@ async function enrichPlanWithRecipes(plan: WeeklyPlan) {
       }
 
       // 2. Scrape if not in cache
-      // Simple sequential scraping to avoid rate limits/blocks
-      const result = await searchGialloZafferano(meal.name);
+      // Simple sequential scraping with timeout to prevent hanging
+      let result = null;
+      try {
+        const scrapePromise = searchGialloZafferano(meal.name);
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)); // 5s timeout
+        result = await Promise.race([scrapePromise, timeoutPromise]);
+      } catch (e) {
+        console.warn(`[RECIPE] Scraping error for "${meal.name}":`, e);
+      }
+
       if (result) {
         meal.recipeUrl = result.url;
         meal.imageUrl = result.imageUrl;

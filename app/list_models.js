@@ -1,7 +1,22 @@
+const fs = require('fs');
+const path = require('path');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 async function list() {
-    const key = "AIzaSyBRCi43hDCv0Ih9eYA7RwprFxcARuZ-ZmQ";
+    let key = '';
+    try {
+        const envPath = path.resolve(__dirname, '.env.local');
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const match = envContent.match(/GOOGLE_API_KEY=(.*)/);
+        if (match) key = match[1].trim();
+    } catch (e) {
+        // Ignored
+    }
+
+    if (!key) {
+        console.error("❌ No GOOGLE_API_KEY found in .env.local");
+        return;
+    }
     const genAI = new GoogleGenerativeAI(key);
     try {
         // Direct fetch because SDK might wrap it weirdly or I want raw list
