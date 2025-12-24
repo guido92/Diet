@@ -12,16 +12,15 @@ import { getEccomiFlyerUrl } from './eccomi';
 
 // Team GOURMET: High Logic & Creativity (Prioritize Quality)
 const CHEF_MODELS = [
-  'gemini-3-pro-preview',    // Top Tier (User Requested)
-  'gemini-2.5-pro',          // New Stable High Quality
-  'gemini-2.0-flash'         // Fast Backup
+  'gemini-3-pro-preview',    // User Confirmed
+  'gemini-3-flash-preview',  // User Confirmed
 ];
 
 // Team WORKER: High Speed & Quota
 const WORKER_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash'
+  'gemini-2.5-flash',         // User Confirmed
+  'gemini-2.5-flash-lite',    // User Confirmed
+  'gemini-3-flash-preview'    // Fallback
 ];
 
 /**
