@@ -193,9 +193,13 @@ export type AppData = {
     recipes?: Record<string, RecipeCacheItem>; // Cache for scraped recipes
     message: string;
     lastUpdate: number;
-};
-history: MealHistory[];
-lastAutoRoutine ?: string;
+    history: MealHistory[];
+    lastAutoRoutine?: string;
+    syncStatus: {
+        state: 'idle' | 'running' | 'success' | 'error';
+        message: string;
+        lastUpdate: number;
+    };
 };
 
 export type RecipeCacheItem = {
@@ -241,10 +245,10 @@ const DEFAULT_DATA: AppData = {
     ],
     activeOffers: [],
     recipes: {},
-    activeOffers: [],
-    recipes: {},
     syncStatus: { state: 'idle', message: '', lastUpdate: 0 },
     history: [],
+    message: '',
+    lastUpdate: 0
 };
 
 export async function togglePantryItem(item: string) {

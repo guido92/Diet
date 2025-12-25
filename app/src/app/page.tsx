@@ -3,6 +3,10 @@ import { getData, updateAutoRoutineDate } from "@/lib/data";
 import { smartSyncOffersAction, generateBothPlansAction } from "@/lib/ai";
 import PlannerEditor from "@/components/PlannerEditor";
 import { Utensils, User, Users, Wand2, History as HistoryIcon } from "lucide-react";
+import { DAYS_MAP, ENGLISH_DAYS } from '@/lib/constants';
+import { getPieceLabel } from '@/lib/conversions';
+import RecipeCard from '@/components/RecipeCard';
+import { GUIDELINES } from '@/lib/guidelines';
 
 export default async function Home() {
   const data = await getData();
@@ -10,6 +14,8 @@ export default async function Home() {
   const userRole = data.currentUser;
   const plan = data.users[userRole].plan || {};
   const activeOffers = data.activeOffers || [];
+
+  const getMeal = (id: string) => GUIDELINES.find(g => g.id === id);
 
   // SATURDAY AUTOMATION CHECK
   let autoRoutineRan = false;
