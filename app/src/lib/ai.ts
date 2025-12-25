@@ -742,7 +742,12 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
                 // eslint-disable-next-line @typescript-eslint/no-require-imports
                 const pdf = require('pdf-parse');
                 if (typeof pdf === 'function') {
-                  const pdfData = await pdf(buffer);
+                  // Suppress noisy PDF warnings
+                  const originalWarn = console.warn;
+                  console.warn = () => { };
+                  const pdfData = await pdf(buffer).finally(() => {
+                    console.warn = originalWarn;
+                  });
                   // STATUS UPDATE
                   const extractingData = await getData();
                   extractingData.syncStatus = { state: 'running', message: `Estrazione offerte: ${flyerTitle}...`, lastUpdate: Date.now() };
