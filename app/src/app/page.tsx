@@ -20,13 +20,19 @@ export default async function Home() {
   const currentWeight = activeUser.currentWeight;
   const lost = (startWeight - currentWeight).toFixed(1);
 
+  // Date Logic
+  const now = new Date();
+  const dayIndex = now.getDay(); // 0=Sun, 1=Mon...
+  const todayIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 0=Mon, 6=Sun
+  const today = ENGLISH_DAYS[todayIndex];
+  const todayPlan = activeUser.plan[today];
+
   const getMeal = (id: string) => GUIDELINES.find(g => g.id === id);
 
   // SATURDAY AUTOMATION CHECK
   let autoRoutineRan = false;
-  const today = new Date();
-  const isSaturday = today.getDay() === 6;
-  const todayStr = today.toISOString().split('T')[0];
+  const isSaturday = dayIndex === 6;
+  const todayStr = now.toISOString().split('T')[0];
 
   if (isSaturday && data.lastAutoRoutine !== todayStr) {
     console.log('✨ TRIGGERING SATURDAY ROUTINE...');
