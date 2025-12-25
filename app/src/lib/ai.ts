@@ -1165,13 +1165,16 @@ Output formattato in Markdown:
 `;
 
   try {
-    const response = await callGeminiSafe(prompt);
+    const response = await callGeminiSafe(prompt, CHEF_MODELS);
     const text = response || "Impossibile recuperare la ricetta.";
 
     // Save to Cache (Merge with any link data)
-    // Note: We are ignoring the fact we might overwrite a 'single' recipe with a 'shared' one in the same key.
-    // For now this is acceptable as the user likely wants the relevant one for the current context.
-    await saveRecipeAction(mealName, undefined, undefined, text);
+    // We pass an empty URL if creating fresh, but the merge logic in saveRecipeAction will keep existing URL if present.
+    await saveRecipeAction(mealName, {
+      url: '',
+      aiContent: text,
+      lastChecked: new Date().toISOString()
+    });
 
     return text;
   } catch (error) {
