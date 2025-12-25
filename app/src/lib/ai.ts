@@ -427,6 +427,108 @@ function sanitizePlan(plan: WeeklyPlan, user: string, guidelines: MealOption[]):
 }
 
 /**
+ * Regenerates a SINGLE meal using AI (Chef Mode).
+ * It picks a valid guideline (base) and then asks AI to make it "Gourmet".
+ */
+export async function regenerateMealAI(dayName: string, mealType: string): Promise<{ success: boolean; mealName?: string }> {
+  // 1. Get Context
+  const data = await getData();
+  const userRole = data.currentUser;
+  const user = data.users[userRole];
+  const pantryItems = data.pantryItems || [];
+
+  if (!user.plan || !user.plan[dayName]) return { success: false };
+
+  const currentPlan = user.plan[dayName];
+  const isTraining = currentPlan.training;
+  const season = generateLocalPlan([])._season || 'winter'; // Hack to get season, or import getCurrentSeason
+
+  // 2. Find ALL valid Options (Guidelines)
+  const validOptions = GUIDELINES.filter(g => {
+    if (g.type !== mealType) return false;
+    if (g.owners && !g.owners.includes(userRole)) return false;
+    // Simple season/training check
+    // (We skip strict season check to allow variety if user wants, or keep it strict? Let's keep it strict-ish)
+    if (g.condition === 'training' && !isTraining) return false;
+    if (g.condition === 'rest' && isTraining) return false;
+    return true;
+  });
+
+  if (validOptions.length === 0) return { success: false };
+
+  // 3. Pick One Randomly (different from current if possible)
+  const currentId = (currentPlan as any)[mealType];
+  const otherOptions = validOptions.filter(o => o.id !== currentId);
+  const selectedOption = otherOptions.length > 0
+    ? otherOptions[Math.floor(Math.random() * otherOptions.length)]
+    : validOptions[Math.floor(Math.random() * validOptions.length)];
+
+  console.log(`[REGEN AI] Selected base: ${selectedOption.name} for ${dayName} ${mealType}`);
+
+  // 4. Generate Gourmet Variant via AI
+  const prompt = `
+    Sei lo Chef "Zero Sprechi".
+    Crea una variante per questo pasto: "${selectedOption.name}".
+    
+    NON INVENTARE un pasto diverso (es. se è Pollo, deve rimanere Pollo).
+    MA dagli un Tocco Gourmet e un Nome da Ristorante.
+    
+    Ingredienti Base (Linee Guida): ${selectedOption.description}
+    Dispensa (Usa se ha senso): ${pantryItems.slice(0, 10).join(', ')}
+    
+    Output JSON:
+    {
+      "name": "Nome Piatto Entusiasmante (es. Pollo al Curry Light)",
+      "description": "Breve descrizione appetitosa (max 1 frasi)"
+    }
+  `;
+
+  let details = { name: selectedOption.name, description: selectedOption.description };
+
+  try {
+    const response = await callGeminiSafe(prompt, WORKER_MODELS); // Use faster model
+    const jsonStr = response.replace(/```json/g, '').replace(/```/g, '').trim();
+    details = JSON.parse(jsonStr);
+  } catch (e) {
+    console.warn('[REGEN AI] Failed to generate variant, using default.', e);
+  }
+
+  // 5. Update Plan
+  (user.plan[dayName] as any)[mealType] = selectedOption.id;
+  (user.plan[dayName] as any)[`${mealType}_details`] = {
+    name: details.name,
+    recipe: details.description,
+    recipeUrl: '', // Clear old
+    imageUrl: ''   // Clear old
+  };
+
+  // 6. Enrich with GialloZafferano (Async/background or immediate?)
+  // Let's do it immediate for better UX, though it takes a sec
+  try {
+    const gzResult = await searchGialloZafferano(details.name);
+    if (gzResult) {
+      const d = (user.plan[dayName] as any)[`${mealType}_details`];
+      d.recipeUrl = gzResult.url;
+      d.imageUrl = gzResult.imageUrl;
+      // Cache it too
+      await saveRecipeAction(details.name, {
+        url: gzResult.url,
+        imageUrl: gzResult.imageUrl,
+        lastChecked: new Date().toISOString()
+      });
+    }
+  } catch (e) {
+    console.error('Scraper error in regen:', e);
+  }
+
+  await saveData(data);
+  revalidatePath('/'); // Refresh UI
+
+  return { success: true, mealName: details.name };
+}
+
+
+/**
  * Generates plans for BOTH users, syncing shared meals.
  * Returns the plans WITHOUT saving them (Preview Mode).
  */

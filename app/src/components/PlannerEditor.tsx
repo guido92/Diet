@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { MealOption, getCurrentSeason } from '@/lib/guidelines';
-import { DailyPlan, WeeklyPlan, saveWeeklyPlan, refreshSingleMeal } from '@/lib/data';
+import { DailyPlan, WeeklyPlan, saveWeeklyPlan } from '@/lib/data';
 import { ChevronDown, ChevronUp, Save, Wand2, BookOpen, ShoppingCart, ExternalLink, Edit3, List, RefreshCcw } from 'lucide-react';
-import { generateWeeklyPlanAI } from '@/lib/ai';
+import { generateWeeklyPlanAI, regenerateMealAI } from '@/lib/ai';
 import { getPieceLabel } from '@/lib/conversions';
 import Link from 'next/link';
 import { ConadOffer } from '@/lib/data';
@@ -71,15 +71,16 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
     };
 
     const handleRefresh = async (day: string, type: string) => {
-        if (!confirm('Cambiare questo pasto con un altro casuale?')) return;
+        if (!confirm('Rigenerare questo pasto con l\'Intelligenza Artificiale (Chef Zero Sprechi)?')) return;
         setSaving(true);
         try {
-            await refreshSingleMeal(day, type);
-            // Refresh logic handled by revalidatePath on server, usually triggers Router refresh. 
-            // In Client Components using local state 'plan', we need to reload to get new data 
-            // OR we should have received the new plan from the server action (if I updated expected return type).
-            // For now, reload is safest to sync everything including active offers etc.
-            window.location.reload();
+            const result = await regenerateMealAI(day, type);
+            if (result.success) {
+                // Refresh logic using window reload to catch new data from server action
+                window.location.reload();
+            } else {
+                alert('Errore: Impossibile trovare alternative per questo pasto.');
+            }
         } catch {
             alert('Errore aggiornamento pasto');
         }
