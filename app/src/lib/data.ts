@@ -103,35 +103,7 @@ export async function refreshSingleMeal(dayName: string, mealType: string) {
 
 // ...
 
-export async function toggleMealEaten(dayName: string, mealType: string, photoUrl?: string, aiAnalysis?: string, aiRating?: number) {
-    const data = await getData();
-    const userRole = (await getUserSession()) || 'Michael';
-    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
-    if (details) {
-        // If we are marking as eaten (turning true) and have new data, update it
-        if (!details.eaten && photoUrl) {
-            details.photoUrl = photoUrl;
-            details.aiAnalysis = aiAnalysis;
-            details.aiRating = aiRating;
-        }
-
-        details.eaten = !details.eaten;
-        await saveData(data);
-
-        // Auto-Archive if eaten is true
-        if (details.eaten) {
-            await archiveMealAction({
-                date: new Date().toISOString().split('T')[0],
-                user: userRole,
-                mealType: mealType,
-                mealName: details.name,
-                photoUrl: details.photoUrl,
-                rating: details.rating
-            });
-        }
-        revalidatePath('/');
-    }
-}
+// function moved to end of file
 
 export async function rateMeal(dayName: string, mealType: string, rating: 'up' | 'down' | undefined) {
     const data = await getData();
@@ -396,6 +368,17 @@ const DEFAULT_DATA: AppData = {
     lastUpdate: 0
 };
 
+
+function archiveMealHelper(data: AppData, entry: MealHistory) {
+    if (!data.history) data.history = [];
+    const existingIndex = data.history.findIndex(h => h.date === entry.date && h.user === entry.user && h.mealType === entry.mealType);
+    if (existingIndex >= 0) {
+        data.history[existingIndex] = entry;
+    } else {
+        data.history.push(entry);
+    }
+}
+
 export async function togglePantryItem(item: string) {
     const data = await getData();
     if (!data.pantryItems) data.pantryItems = [];
@@ -409,21 +392,40 @@ export async function togglePantryItem(item: string) {
 }
 
 
+export async function toggleMealEaten(dayName: string, mealType: string, photoUrl?: string, aiAnalysis?: string, aiRating?: number) {
+    const data = await getData();
+    const userRole = data.currentUser;
+    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
+    if (details) {
+        // If we are marking as eaten (turning true) and have new data, update it
+        if (!details.eaten && photoUrl) {
+            details.photoUrl = photoUrl;
+            details.aiAnalysis = aiAnalysis;
+            details.aiRating = aiRating;
+        }
+
+        details.eaten = !details.eaten;
+
+        // Auto-Archive internally if eaten is true (No double save/race condition)
+        if (details.eaten) {
+            archiveMealHelper(data, {
+                date: new Date().toISOString().split('T')[0],
+                user: userRole,
+                mealType: mealType,
+                mealName: details.name,
+                photoUrl: details.photoUrl,
+                rating: details.rating
+            });
+        }
+
+        await saveData(data);
+        revalidatePath('/');
+    }
+}
 
 export async function archiveMealAction(entry: MealHistory) {
     const data = await getData();
-    if (!data.history) data.history = [];
-
-    // Check if duplicate for same user/date/type? Overwrite or Append?
-    // Let's Append but avoid exact dupes if called multiple times quickly
-    const existingIndex = data.history.findIndex(h => h.date === entry.date && h.user === entry.user && h.mealType === entry.mealType);
-    if (existingIndex >= 0) {
-        // Update existing (maybe photo changed)
-        data.history[existingIndex] = entry;
-    } else {
-        data.history.push(entry);
-    }
-
+    archiveMealHelper(data, entry);
     await saveData(data);
 }
 
