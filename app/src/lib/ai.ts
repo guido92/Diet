@@ -165,36 +165,36 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
       - Verdura Stagione: ${JSON.stringify(seasonalVeg)}
       
       REGOLE FONDAMENTALI:
-      1. **DIETA RIGIDA MA CREATIVA**:
-         - Niente sgarri Lun-Ven.
-         - Sabato/Domenica: Max 1 "Pranzo dai Suoceri" e Max 1 "Cena Libera/Amici".
+      1. **DIETA RIGIDA (LUN-GIO)**:
+         - **ASSOLUTAMENTE NESSUN "PASTO LIBERO", "PIZZA", "SUSHI" O "AMICI" DA LUNEDÌ A GIOVEDÌ.**
+         - Giovedì è un giorno DI DIETA come gli altri. Niente eccezioni.
       
-      2. **COMPATIBILITÀ COPPIA**:
-         - CENA (Tutti i giorni) & PRANZO (Weekend): Cibo condiviso (owners include sia Michael che Jessica).
-         - PRANZO (Lun-Ven): Cibo individuale (owners include ${user}).
+      2. **WEEKEND (VEN-SAB-DOM) - FLESSIBILITÀ CONTROLLATA**:
+         - Concessi MAX 1-2 pasti "liberi" (es. "Pizza", "Sushi", "Pranzo dai Suoceri") in TOTALE su tutto il weekend (Venerdì cena, Sabato, Domenica).
+         - Se Venerdì sera c'è la pizza, Sabato e Domenica si sta più leggeri.
+      
+      3. **COMPATIBILITÀ COPPIA (CRUCIALE)**:
+         - **CENA (Lunedì-Domenica)**: Michael e Jessica MANGIANO LA STESSA COSA. Se scrivi "Pasta" per Michael, deve esserci "Pasta" per Jessica.
+         - **PRANZO (Sabato-Domenica)**: Michael e Jessica MANGIANO LA STESSA COSA.
+         - **PRANZO (Lunedì-Venerdì)**: Possono mangiare cose diverse (es. avanzi o insalate veloci).
 
-      3. **ALLENAMENTO**:
+      4. **ALLENAMENTO**:
          ${user === 'Michael' ?
       '- MICHAEL: Training TRUE solo Martedì e Giovedì. (Riposo gli altri giorni).' :
       '- JESSICA: Training FALSE (o variabile, ma default false).'}
 
-      4. **INTELLIGENZA "CHEF MODE" (CRUCIALE)**:
+      5. **INTELLIGENZA "CHEF MODE"**:
           - **VARIAZIONE OBBLIGATORIA (REGOLA ANTI-NOIA)**:
-           > È SEVERAMENTE VIETATO servire la stessa fonte principale (es. "Merluzzo", "Tacchino", "Pasta", "Riso") per due pasti consecutivi o troppo frequentemente.
+           > È SEVERAMENTE VIETATO servire la stessa fonte principale (es. "Merluzzo", "Tacchino", "Pasta", "Riso") per due pasti consecutivi.
            > ALTERNA sempre: Carne Bianca -> Pesce -> Legumi -> Carne Rossa (raro).
            > ALTERNA CARBOIDRATI: Pasta -> Riso -> Patate -> Pane -> Cereali.
-           > Se Lunedì Pranzo = Pasta, Martedì Pranzo NON PUÒ ESSERE PASTA.
            
-         - **USA LA DISPENSA**:
-           > Se in dispensa c'è "Tonno", cerca di inserire un pasto col Tonno (se le linee guida lo permettono).
-           > Se c'è "Riso", usa il Riso come carboidrato.
-         
-         - **USA LE OFFERTE**:
-           > Se c'è un'offerta sul "Pollo", scrivi "Pollo in offerta" o crea una ricetta ad hoc.
+         - **USA LA DISPENSA & OFFERTE**:
+           > Dai priorità a: ${pantryItems.slice(0, 5).join(', ')}.
+           > Usa le offerte attive per decidere la proteina o la verdura.
 
          - **NOMING ACCATTIVANTE**:
-           > Nel campo \`lunch_details.name\` o \`dinner_details.name\`, non scrivere solo "Pollo". Scrivi "Tagliata di Pollo al Rosmarino".
-           > Rendi il piano desiderabile!
+           > Usa nomi da ristorante (es. "Tagliata di Pollo al Rosmarino" o "Cuori di Merluzzo in Guazzetto"). Evita nomi generici.
 
       5. **STRUTTURA JSON OUTPUT**:
          Restituisci SOLO un JSON valido (WeeklyPlan).
