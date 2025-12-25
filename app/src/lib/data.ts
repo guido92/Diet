@@ -408,35 +408,7 @@ export async function togglePantryItem(item: string) {
     await saveData(data);
 }
 
-export async function toggleMealEaten(dayName: string, mealType: string, photoUrl?: string, aiAnalysis?: string, aiRating?: number) {
-    const data = await getData();
-    const userRole = data.currentUser;
-    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
-    if (details) {
-        // If we are marking as eaten (turning true) and have new data, update it
-        if (!details.eaten && photoUrl) {
-            details.photoUrl = photoUrl;
-            details.aiAnalysis = aiAnalysis;
-            details.aiRating = aiRating;
-        }
 
-        details.eaten = !details.eaten;
-        await saveData(data);
-
-        // Auto-Archive if eaten is true
-        if (details.eaten) {
-            await archiveMealAction({
-                date: new Date().toISOString().split('T')[0],
-                user: userRole,
-                mealType: mealType,
-                mealName: details.name,
-                photoUrl: details.photoUrl,
-                rating: details.rating
-            });
-        }
-        revalidatePath('/');
-    }
-}
 
 export async function archiveMealAction(entry: MealHistory) {
     const data = await getData();
@@ -484,51 +456,13 @@ export async function updateAutoRoutineDate() {
     await saveData(data);
 }
 
-export async function rateMeal(dayName: string, mealType: string, rating: 'up' | 'down' | undefined) {
-    const data = await getData();
-    const userRole = data.currentUser;
-    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
-    if (details) {
-        // Toggle off if clicking same rating
-        if (details.rating === rating) details.rating = undefined;
-        else details.rating = rating;
-
-        await saveData(data);
-        revalidatePath('/');
-    }
-}
 
 
 
 
 
-export async function getData(): Promise<AppData> {
-    try {
-        const content = await fs.readFile(DATA_FILE, 'utf-8');
-        const data = JSON.parse(content);
-        if (!data.users) return DEFAULT_DATA;
-        if (!data.manualShoppingItems) data.manualShoppingItems = [];
-        if (!data.activeOffers) data.activeOffers = [];
-        if (!data.recipes) data.recipes = {};
-        if (!data.conadFlyers) data.conadFlyers = [];
-        if (!data.syncStatus) data.syncStatus = { state: 'idle', message: '', lastUpdate: 0 };
-        if (!data.history) data.history = [];
 
 
-        // Force update guidelines to match latest code definitions
-        data.users.Michael.guidelines = GUIDELINES;
-        data.users.Jessica.guidelines = GUIDELINES;
-
-        return data;
-    } catch {
-        try {
-            await saveData(DEFAULT_DATA);
-        } catch {
-            console.warn('Could not save default data (likely build environment)');
-        }
-        return DEFAULT_DATA;
-    }
-}
 
 export async function getSyncStatusAction() {
     const data = await getData();
