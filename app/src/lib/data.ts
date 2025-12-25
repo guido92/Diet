@@ -14,16 +14,23 @@ const DATA_FILE = process.env.DATA_FILE_PATH || path.resolve(process.cwd(), '../
 
 // ... existing code ...
 
+import { getUserSession } from './actions';
+
+// ...
+
 export async function updateUserGuidelines(guidelines: MealOption[]) {
     const data = await getData();
-    data.users[data.currentUser].guidelines = guidelines;
+    const userRole = (await getUserSession()) || 'Michael'; // Fallback for safety, or we could throw
+    data.users[userRole].guidelines = guidelines;
     await saveData(data);
 }
 
 export async function refreshSingleMeal(dayName: string, mealType: string) {
     const data = await getData();
-    const userRole = data.currentUser;
+    const userRole = (await getUserSession()) || 'Michael';
     const user = data.users[userRole];
+
+    // ... (Rest of function remains same, just ensuring userRole is correct)
 
     // Safety check
     if (!user.plan || !user.plan[dayName]) return;
@@ -92,6 +99,144 @@ export async function refreshSingleMeal(dayName: string, mealType: string) {
     await saveData(data);
     revalidatePath('/');
     return { success: true, mealName: newMeal.name };
+}
+
+// ...
+
+export async function toggleMealEaten(dayName: string, mealType: string, photoUrl?: string, aiAnalysis?: string, aiRating?: number) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
+    if (details) {
+        // If we are marking as eaten (turning true) and have new data, update it
+        if (!details.eaten && photoUrl) {
+            details.photoUrl = photoUrl;
+            details.aiAnalysis = aiAnalysis;
+            details.aiRating = aiRating;
+        }
+
+        details.eaten = !details.eaten;
+        await saveData(data);
+
+        // Auto-Archive if eaten is true
+        if (details.eaten) {
+            await archiveMealAction({
+                date: new Date().toISOString().split('T')[0],
+                user: userRole,
+                mealType: mealType,
+                mealName: details.name,
+                photoUrl: details.photoUrl,
+                rating: details.rating
+            });
+        }
+        revalidatePath('/');
+    }
+}
+
+export async function rateMeal(dayName: string, mealType: string, rating: 'up' | 'down' | undefined) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
+    if (details) {
+        // Toggle off if clicking same rating
+        if (details.rating === rating) details.rating = undefined;
+        else details.rating = rating;
+
+        await saveData(data);
+        revalidatePath('/');
+    }
+}
+
+export async function getData(): Promise<AppData> {
+    try {
+        const content = await fs.readFile(DATA_FILE, 'utf-8');
+        const data = JSON.parse(content);
+        if (!data.users) return DEFAULT_DATA;
+        if (!data.manualShoppingItems) data.manualShoppingItems = [];
+        if (!data.activeOffers) data.activeOffers = [];
+        if (!data.recipes) data.recipes = {};
+        if (!data.conadFlyers) data.conadFlyers = [];
+        if (!data.syncStatus) data.syncStatus = { state: 'idle', message: '', lastUpdate: 0 };
+        if (!data.history) data.history = [];
+
+        // Force update guidelines to match latest code definitions
+        data.users.Michael.guidelines = GUIDELINES;
+        data.users.Jessica.guidelines = GUIDELINES;
+
+        // Override currentUser with session if available
+        const session = await getUserSession();
+        if (session) {
+            data.currentUser = session;
+        }
+
+        return data;
+    } catch {
+        try {
+            await saveData(DEFAULT_DATA);
+        } catch {
+            console.warn('Could not save default data (likely build environment)');
+        }
+        return DEFAULT_DATA;
+    }
+}
+
+// ...
+
+export async function setCurrentUser(userName: 'Michael' | 'Jessica') {
+    const data = await getData();
+    data.currentUser = userName;
+    await saveData(data);
+    revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/shopping');
+    revalidatePath('/tracker');
+}
+
+export async function updateWeight(weight: number, notes?: string) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+    user.currentWeight = weight;
+    user.logs.push({
+        date: new Date().toISOString().split('T')[0],
+        weight,
+        notes
+    });
+    await saveData(data);
+    revalidatePath('/tracker');
+}
+
+export async function updateTargetWeight(weight: number) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    data.users[userRole].targetWeight = weight;
+    await saveData(data);
+    revalidatePath('/tracker');
+}
+
+export async function addSgarro(sgarro: string) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+    const today = new Date().toISOString().split('T')[0];
+    const logIndex = user.logs.findIndex(l => l.date === today);
+    if (logIndex >= 0) {
+        const existing = user.logs[logIndex].notes || '';
+        user.logs[logIndex].notes = existing ? `${existing}, ${sgarro}` : sgarro;
+    } else {
+        user.logs.push({ date: today, notes: sgarro });
+    }
+    await saveData(data);
+}
+
+export async function saveWeeklyPlan(plan: WeeklyPlan) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    data.users[userRole].plan = plan;
+    await saveData(data);
+    revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/shopping');
 }
 
 export type MealDetails = {
@@ -444,58 +589,7 @@ export async function toggleManualShoppingItem(id: string) {
     revalidatePath('/shopping');
 }
 
-export async function setCurrentUser(userName: 'Michael' | 'Jessica') {
-    const data = await getData();
-    data.currentUser = userName;
-    await saveData(data);
-    revalidatePath('/');
-    revalidatePath('/planner');
-    revalidatePath('/shopping');
-    revalidatePath('/tracker');
-}
-
-export async function updateWeight(weight: number, notes?: string) {
-    const data = await getData();
-    const user = data.users[data.currentUser];
-    user.currentWeight = weight;
-    user.logs.push({
-        date: new Date().toISOString().split('T')[0],
-        weight,
-        notes
-    });
-    await saveData(data);
-    revalidatePath('/tracker');
-}
-
-export async function updateTargetWeight(weight: number) {
-    const data = await getData();
-    data.users[data.currentUser].targetWeight = weight;
-    await saveData(data);
-    revalidatePath('/tracker');
-}
-
-export async function addSgarro(sgarro: string) {
-    const data = await getData();
-    const user = data.users[data.currentUser];
-    const today = new Date().toISOString().split('T')[0];
-    const logIndex = user.logs.findIndex(l => l.date === today);
-    if (logIndex >= 0) {
-        const existing = user.logs[logIndex].notes || '';
-        user.logs[logIndex].notes = existing ? `${existing}, ${sgarro}` : sgarro;
-    } else {
-        user.logs.push({ date: today, notes: sgarro });
-    }
-    await saveData(data);
-}
-
-export async function saveWeeklyPlan(plan: WeeklyPlan) {
-    const data = await getData();
-    data.users[data.currentUser].plan = plan;
-    await saveData(data);
-    revalidatePath('/');
-    revalidatePath('/planner');
-    revalidatePath('/shopping');
-}
+// Duplicates removed (these functions were already defined/updated earlier in the file)
 
 export async function saveCouplePlansAction(michaelPlan: WeeklyPlan, jessicaPlan: WeeklyPlan) {
     const data = await getData();

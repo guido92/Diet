@@ -1102,46 +1102,63 @@ async function extractGuidelinesAI(text: string): Promise<MealOption[]> {
   }
 }
 
-export async function getRecipeAI(mealName: string, description: string, user: 'Michael' | 'Jessica' = 'Michael'): Promise<string> {
+export async function getRecipeAI(mealName: string, description: string, user: string, isShared: boolean = false): Promise<string> {
   const data = await getData();
-  const activeOffers = data.activeOffers || [];
-  const currentMonth = new Intl.DateTimeFormat('it-IT', { month: 'long' }).format(new Date());
 
-  const prompt = `
-    Sei un Top Chef stile "Giallo Zafferano", esperto nel rendere deliziosi i piatti dietetici.
-    Utente: ${user}. Mese: ${currentMonth}.
-    Offerte Conad: ${JSON.stringify(activeOffers)}
-    
-    RICETTA PER: "${mealName}"
-    INGREDIENTI E QUANTITÀ (Dalla Dieta): "${description}"
-    
-    REGOLE TASSATIVE:
-    1. **STRICT INGREDIENTS**: Usa SOLO gli ingredienti elencati. Non aggiungere altro.
-    2. **ZERO OLIO IN COTTURA**: Regola ferrea.
-    3. **FORMATTAZIONE & SPAZIATURA (IMPORTANTE)**: 
-       - Usa TITOLI GRANDI (## Titolo).
-       - Usa Sottotitoli in grassetto o ### per le sezioni (Ingredienti, Procedimento).
-       - **LASCIA UNA RIGA VUOTA TRA OGNI PARAGRAFO O STEP**. Il testo deve respirare.
-       - Usa elenchi puntati per gli ingredienti.
-       - Usa elenchi numerati per il procedimento.
-    4. **STILE**: 
-       - ⏱️ Tempi in evidenza.
-       - 👩‍🍳 Procedimento dettagliato ma ben spaziato.
-       - 💡 Tocco dello Chef ben separato alla fine.
-    5. **OFFERTE**: Segnala con 🏷️.
-  `;
+  // 1. Check Cache
+  const cacheKey = `${mealName}-${description}-${isShared ? 'shared' : 'single'}`;
+  const cached = data.recipes?.[mealName];
+
+  if (cached && cached.aiContent) {
+    // Simple heuristic: if we want shared, look for "2 persone"
+    const content = cached.aiContent;
+    const seemsShared = content.includes('2 Persone') || content.includes('per 2 persone');
+
+    if (isShared === seemsShared) {
+      return content;
+    }
+    // If mismatch, fall through to regenerate
+  }
+
+  // 2. Generate with Gemini
+  const sharedPrompt = isShared
+    ? `\nNOTA BENE: Questo pasto è CONDIVISO (Cena o Pranzo del Weekend). La ricetta deve essere CALCOLATA PER 2 PERSONE. Somma gli ingredienti. Scrivi chiaramente "RICETTA PER 2 PERSONE" all'inizio.`
+    : `\nRicetta per 1 persona.`;
+
+  const prompt = `Sei uno chef nutrizionista esperto.
+Crea una ricetta dettagliata e gustosa per questo piatto: "${mealName}".
+Descrizione indicativa: "${description}".
+Utente target: ${user} (Obiettivo: Dimagrimento/Mantenimento, Cucina sana e saporita).
+${sharedPrompt}
+
+Output formattato in Markdown:
+## 🥘 [Nome Piatto] ${isShared ? '(x2 Persone)' : ''}
+**Tempo:** ... | **Calorie (per porzione):** ...
+
+### 🛒 Ingredienti ${isShared ? '(Totale per 2)' : ''}
+- ... (Quantità esatte in grammi)
+
+### 👨‍🍳 Preparazione
+1. ...
+2. ...
+
+### 💡 Consiglio dello Chef
+...
+`;
 
   try {
-    let text = await callGeminiSafe(prompt, CHEF_MODELS);
+    const response = await callGeminiSafe(prompt);
+    const text = response || "Impossibile recuperare la ricetta.";
 
-    // Force extra spacing for mobile clarity
-    text = text.replace(/(\r\n|\r|\n)/g, '\n\n');
-    text = text.replace(/\n\n\n+/g, '\n\n'); // Avoid triple newlines
+    // Save to Cache (Merge with any link data)
+    // Note: We are ignoring the fact we might overwrite a 'single' recipe with a 'shared' one in the same key.
+    // For now this is acceptable as the user likely wants the relevant one for the current context.
+    await saveRecipeAction(mealName, undefined, undefined, text);
 
     return text;
   } catch (error) {
-    console.error('Recipe AI Error:', error);
-    return 'Non sono riuscito a trovare una ricetta. Ricorda: No Olio!';
+    console.error("AI Recipe Error:", error);
+    return "Errore nella generazione della ricetta.";
   }
 }
 

@@ -42,9 +42,16 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
 
         setLoading(true);
         try {
+            // Determine if shared
+            // Dinner is always shared.
+            // Lunch is shared only on Saturday and Sunday.
+            const isDinner = type === 'dinner';
+            const isWeekendLunch = type === 'lunch' && (day === 'Saturday' || day === 'Sunday' || day === 'Sabato' || day === 'Domenica');
+            const isShared = isDinner || isWeekendLunch;
+
             // Enhance description with specific protein if available
             const fullDescription = specificProtein ? `${description} (Usa: ${specificProtein})` : description;
-            const result = await getRecipeAI(mealName, fullDescription, user);
+            const result = await getRecipeAI(mealName, fullDescription, user, isShared);
             setRecipe(result);
         } catch {
             setRecipe("Scusa, lo chef è in pausa. Riprova dopo.");

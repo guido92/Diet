@@ -2,20 +2,54 @@ import Link from "next/link";
 import { getData, updateAutoRoutineDate } from "@/lib/data";
 import { smartSyncOffersAction, generateBothPlansAction } from "@/lib/ai";
 import PlannerEditor from "@/components/PlannerEditor";
-import { Utensils, User, Users, Wand2, History as HistoryIcon } from "lucide-react";
+import { Utensils, User, Users, Wand2, History as HistoryIcon, LogOut } from "lucide-react";
 import { DAYS_MAP, ENGLISH_DAYS } from '@/lib/constants';
 import { getPieceLabel } from '@/lib/conversions';
 import RecipeCard from '@/components/RecipeCard';
 import { GUIDELINES } from '@/lib/guidelines';
+import { getUserSession, loginAction, logoutAction } from "@/lib/actions";
 
 export default async function Home() {
-  const data = await getData();
-  const currentUser = data.currentUser;
-  const userRole = data.currentUser;
-  const plan = data.users[userRole].plan || {};
+  const session = await getUserSession();
+  const data = await getData(); // This now likely internally respects cookie logic or defaults in data.ts, but user-specific checks should rely on session
+
+  // If no session, show Login
+  if (!session) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: '#0f172a',
+        color: 'white',
+        flexDirection: 'column',
+        gap: '2rem'
+      }}>
+        <h1 className="title" style={{ fontSize: '2rem' }}>Chi sta usando questo dispositivo?</h1>
+        <div style={{ display: 'flex', gap: '2rem' }}>
+          <form action={async () => { 'use server'; await loginAction('Michael'); }}>
+            <button className="btn" style={{ fontSize: '1.5rem', padding: '2rem' }}>👨‍💻 Michael</button>
+          </form>
+          <form action={async () => { 'use server'; await loginAction('Jessica'); }}>
+            <button className="btn" style={{ fontSize: '1.5rem', padding: '2rem', background: '#ec4899' }}>👩‍🦰 Jessica</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const currentUser = session;
+  const userRole = session;
+  const activeUser = data.users[userRole];
+
+  if (!activeUser || !activeUser.plan) {
+    return <div>Errore caricamento profilo utente. Riprova.</div>;
+  }
+
+  const plan = activeUser.plan || {};
   const activeOffers = data.activeOffers || [];
 
-  const activeUser = data.users[userRole];
   const startWeight = activeUser.startWeight;
   const currentWeight = activeUser.currentWeight;
   const lost = (startWeight - currentWeight).toFixed(1);
@@ -57,10 +91,18 @@ export default async function Home() {
       <header className="flex-between" style={{ marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1 className="title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Utensils size={32} color="#22c55e" />
-          Diet Planner <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>v2.2 AI</span>
+          Diet Planner <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>v2.3</span>
+          <span style={{ fontSize: '0.6rem', background: '#334155', padding: '2px 6px', borderRadius: '4px', marginLeft: '10px' }}>
+            {currentUser === 'Michael' ? '👨‍💻' : '👩‍🦰'}
+          </span>
         </h1>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <form action={async () => { 'use server'; await logoutAction(); }}>
+            <button className="btn" style={{ background: 'transparent', border: '1px solid #334155', padding: '8px' }} title="Esci">
+              <LogOut size={18} />
+            </button>
+          </form>
           <Link href="/history" className="btn" style={{ background: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <HistoryIcon size={18} /> Storico
           </Link>
@@ -118,14 +160,6 @@ export default async function Home() {
                           🍎 {item.details.specificFruit} {(() => {
                             const fruitIng = meal?.ingredients.find(i => i.name === 'Frutta di Stagione');
                             return fruitIng ? getPieceLabel(item.details.specificFruit!, fruitIng.amount) : '';
-                          })()}
-                        </span>
-                      )}
-                      {item.details.specificVeg && (
-                        <span style={{ fontSize: '0.75rem', background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
-                          🥦 {item.details.specificVeg} {(() => {
-                            const vegIng = meal?.ingredients.find(i => i.name.includes('Verdura'));
-                            return vegIng ? getPieceLabel(item.details.specificVeg!, vegIng.amount) : '';
                           })()}
                         </span>
                       )}
