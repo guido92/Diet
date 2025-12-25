@@ -15,6 +15,11 @@ export default async function Home() {
   const plan = data.users[userRole].plan || {};
   const activeOffers = data.activeOffers || [];
 
+  const activeUser = data.users[userRole];
+  const startWeight = activeUser.startWeight;
+  const currentWeight = activeUser.currentWeight;
+  const lost = (startWeight - currentWeight).toFixed(1);
+
   const getMeal = (id: string) => GUIDELINES.find(g => g.id === id);
 
   // SATURDAY AUTOMATION CHECK
