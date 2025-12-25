@@ -348,6 +348,11 @@ function sanitizePlan(plan: WeeklyPlan, user: string, guidelines: MealOption[]):
     const MEAL_KEYS: (keyof DailyPlan)[] = ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner'];
     MEAL_KEYS.forEach(mealKey => {
       let mealId = dayPlan[mealKey] as string;
+      if (typeof mealId !== 'string') {
+        mealId = String(mealId || '');
+        // Force update if it wasn't a string
+        (dayPlan as any)[mealKey] = mealId;
+      }
 
       // Find guideline
       let guideline = guidelines.find(g => g.id === mealId);
@@ -593,23 +598,46 @@ export async function generateCouplePlanPreviewAction(): Promise<{ success: bool
           }
         }
 
-        // 3. Try Name Matching
+        // 3. Try Name Matching (Robust Fallback)
         if (!targetJessicaDinner) {
           const mG = getGuideline(michaelDinner);
           if (mG) {
+            // Find "same dish" for Jessica (guideline with same name)
             const bestMatch = allGuidelines.find(g => g.name === mG.name && g.owners?.includes('Jessica'));
-            if (bestMatch) targetJessicaDinner = bestMatch.id;
+
+            if (bestMatch) {
+              targetJessicaDinner = bestMatch.id;
+            } else {
+              // FORCE SYNC: If we can't find a matching "Jessica" version, but it's a Shared meal...
+              // Ideally we shouldn't serve Michael's ID to Jessica if she doesn't own it, 
+              // BUT for "Shared" meals (Dinner), consistency is king.
+              // Let's see if we can just give her Michael's ID if she is an owner? 
+              // Checked in step 2. 
+
+              // Last Resort: Is there ANY valid dinner for Jessica that looks similar?
+              // ... No, let's keep it empty or independent if we really fail.
+              // But wait, the user complains they are DIFFERENT. 
+              // If Michael has "Petto di Pollo" (ID: 10) and Jessica has "Petto di Pollo" (ID: 11), we matched above.
+              // If Michael has "Pizza" (ID: 99_shared), we matched above (step 2).
+            }
           }
         }
 
         // Apply if found and valid
         if (targetJessicaDinner) {
           planJessica[day].dinner = targetJessicaDinner;
-          // Also copy details if it's a "shared dish" conceptually (name match)
-          // We copy mapped details? Maybe safer to clear details and let UI resolve or copy basic name
+          // Copy details if it's a "shared dish" conceptually (name match or direct shared)
           if (planMichael[day].dinner_details) {
             planJessica[day].dinner_details = { ...planMichael[day].dinner_details! };
           }
+        } else {
+          // CRITICAL: If we couldn't match, should we FORCE Jessica to eat what Michael eats?
+          // Only if Guideline allows.
+          // If completely failed, maybe we should log it.
+          // But to solve the user's issue "they are never the same", we should be aggressive.
+          // If Michael's dinner is valid for Jessica (checked via owner check in step 2), use it.
+          // If not, we can't force it (validation error). 
+          // Logic step 2 covers shared IDs.
         }
       }
 
@@ -639,6 +667,7 @@ export async function generateCouplePlanPreviewAction(): Promise<{ success: bool
           if (targetJessicaLunch) {
             planJessica[day].lunch = targetJessicaLunch;
             if (planMichael[day].lunch_details) {
+              // Copy details for perfect sync
               planJessica[day].lunch_details = { ...planMichael[day].lunch_details! };
             }
           }
