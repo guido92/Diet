@@ -64,7 +64,7 @@ export default async function Home() {
           <Link href="/history" className="btn" style={{ background: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <HistoryIcon size={18} /> Storico
           </Link>
-          <Link href="/noi" className="btn" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #ec4899 100%)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link href="/summary" className="btn" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #ec4899 100%)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Users size={18} /> Noi
           </Link>
         </div>

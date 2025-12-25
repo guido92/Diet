@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { getRecipeAI } from '@/lib/ai';
 import Image from 'next/image';
 import { toggleMealEaten, rateMeal } from '@/lib/data';
@@ -25,11 +25,16 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
     const [recipe, setRecipe] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Local optimistic UI state (could use useOptimistic in future, simpler for now)
-    // Actually simpler to just rely on props if parent refreshes, but for instant feedback maybe local state?
-    // Let's rely on server revalidate for now, or simple local toggle.
-    // Since page reloads on action, lets just fire and forget.
+    // Import these dynamically or ensure they are imported at top
+    // import { uploadImageAction } from '@/lib/upload';
+    // import { analyzeMealPhotoAction } from '@/lib/ai';
+
+    // We need to import them at the top of the file, assuming I will handle imports in a separate Edit or use the existing ones if available (RecipeCard didn't have them).
+    // Wait, I need to add imports first or replacing this block will fail compilation if imports are missing.
+    // I will add imports in a separate block or include them here if I replace the top.
 
     const handleAskChef = async () => {
         setOpen(true);
@@ -49,7 +54,48 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
 
     const handleEaten = async () => {
         if (!day || !type) return;
+
+        // If giving a check (currently false), ask for photo
+        if (!eaten) {
+            if (confirm("📸 Hai scattato una foto al piatto? \n\nClicca OK per caricarla e analizzarla con l'IA.\nClicca ANNULLA per segnare solo come mangiato.")) {
+                fileInputRef.current?.click();
+                return;
+            }
+        }
+
+        // Default toggle without photo
         await toggleMealEaten(day, type);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !day || !type) return;
+
+        setUploading(true);
+        try {
+            // Dynamic Imports to avoid circular deps / clutter if not present?
+            // No, better to have them at top. I will add them in a separate chunk.
+            const { uploadImageAction } = await import('@/lib/upload');
+            const { analyzeMealPhotoAction } = await import('@/lib/ai');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const upRes = await uploadImageAction(formData);
+            if (!upRes.success || !upRes.url) throw new Error(upRes.message);
+
+            const analysis = await analyzeMealPhotoAction(upRes.url, mealName);
+
+            alert(`✅ Analisi Completata!\nVoto: ${analysis.rating}/10\nChef: ${analysis.feedback}`);
+
+            await toggleMealEaten(day, type, upRes.url, analysis.feedback, analysis.rating);
+
+        } catch (err) {
+            console.error(err);
+            alert('Errore caricamento foto. Il pasto verrà segnato comunque.');
+            await toggleMealEaten(day, type);
+        }
+        setUploading(false);
     };
 
     const handleRate = async (r: 'up' | 'down') => {
@@ -59,6 +105,13 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
 
     return (
         <>
+            <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={handleFileChange}
+            />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
                 <button
                     className="btn"
@@ -72,8 +125,12 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
                 {day && type && (
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         {/* Eaten Toggle */}
-                        <button onClick={handleEaten} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: eaten ? '#22c55e' : '#64748b' }} title="Hai mangiato questo pasto?">
-                            {eaten ? <CheckCircle size={22} fill="rgba(34, 197, 94, 0.2)" /> : <Circle size={22} />}
+                        <button onClick={handleEaten} disabled={uploading} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: eaten ? '#22c55e' : '#64748b', opacity: uploading ? 0.5 : 1 }} title="Hai mangiato questo pasto?">
+                            {uploading ? (
+                                <span className="animate-spin">⏳</span>
+                            ) : (
+                                eaten ? <CheckCircle size={22} fill="rgba(34, 197, 94, 0.2)" /> : <Circle size={22} />
+                            )}
                         </button>
 
                         {/* Divider */}

@@ -263,11 +263,18 @@ export async function togglePantryItem(item: string) {
     await saveData(data);
 }
 
-export async function toggleMealEaten(dayName: string, mealType: string) {
+export async function toggleMealEaten(dayName: string, mealType: string, photoUrl?: string, aiAnalysis?: string, aiRating?: number) {
     const data = await getData();
     const userRole = data.currentUser;
     const details = data.users[userRole].plan[dayName][`${mealType}_details` as keyof DailyPlan] as MealDetails | undefined;
     if (details) {
+        // If we are marking as eaten (turning true) and have new data, update it
+        if (!details.eaten && photoUrl) {
+            details.photoUrl = photoUrl;
+            details.aiAnalysis = aiAnalysis;
+            details.aiRating = aiRating;
+        }
+
         details.eaten = !details.eaten;
         await saveData(data);
 
