@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { MealOption, getCurrentSeason } from '@/lib/guidelines';
 import { DailyPlan, WeeklyPlan, saveWeeklyPlan } from '@/lib/data';
-import { ChevronDown, ChevronUp, Save, Wand2, BookOpen, ShoppingCart, ExternalLink, Edit3, List, RefreshCcw } from 'lucide-react';
-import { generateWeeklyPlanAI, regenerateMealAI } from '@/lib/ai';
+import { ChevronDown, ChevronUp, Save, Wand2, BookOpen, ShoppingCart, ExternalLink, Edit3, List, RefreshCcw, Camera, Upload } from 'lucide-react';
+import { generateWeeklyPlanAI, regenerateMealAI, analyzeMealPhotoAction } from '@/lib/ai';
+import { uploadImageAction } from '@/lib/upload';
 import { getPieceLabel } from '@/lib/conversions';
 import Link from 'next/link';
 import { ConadOffer } from '@/lib/data';
@@ -87,6 +88,64 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
         setSaving(false);
     };
 
+    const [uploading, setUploading] = useState<string | null>(null); // "Day-Meal" key
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleUploadClick = (day: string, type: string) => {
+        // Trigger file input
+        if (fileInputRef.current) {
+            fileInputRef.current.setAttribute('data-context', `${day}:${type}`);
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        const context = e.target.getAttribute('data-context'); // "Monday:lunch"
+        if (!file || !context) return;
+
+        const [day, type] = context.split(':');
+        const comboKey = `${day}-${type}`;
+
+        setUploading(comboKey);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // 1. Upload
+            const upRes = await uploadImageAction(formData);
+            if (!upRes.success || !upRes.url) throw new Error(upRes.message);
+
+            // 2. Analyze (Optional: immediately analyze)
+            const expectedMealName = (plan[day] as any)[type + '_details']?.name || 'Pasto';
+            const analysis = await analyzeMealPhotoAction(upRes.url, expectedMealName);
+
+            // 3. Update Plan State (Optimistic)
+            setPlan(prev => {
+                const dayPlan = prev[day];
+                const details = (dayPlan as any)[type + '_details'] || {};
+                details.photoUrl = upRes.url;
+                details.aiAnalysis = analysis.feedback;
+                details.aiRating = analysis.rating;
+
+                return {
+                    ...prev,
+                    [day]: {
+                        ...dayPlan,
+                        [type + '_details']: details
+                    }
+                };
+            });
+
+            alert(`Foto Caricata! AI: ${analysis.rating}/10 - ${analysis.feedback}`);
+        } catch (err) {
+            alert('Upload fallito: ' + err);
+        }
+        setUploading(null);
+        // Reset input
+        e.target.value = '';
+    };
+
     const handleGenerate = async () => {
         const confirm = window.confirm(`Sei sicuro? Questo sovrascriverà il piano di ${userName}.`);
         if (!confirm) return;
@@ -124,6 +183,16 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
             <div className="flex-between" style={{ marginBottom: '1rem' }}>
                 <h2 className="title">Piano di {userName}</h2>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
+                    <Link href="/history" className="btn" style={{ width: 'auto', background: '#475569', color: 'white' }}>
+                        📜 Storico
+                    </Link>
                     <button className="btn" style={{ width: 'auto', background: showOffers ? '#ca8a04' : '#334155', color: 'white' }} onClick={() => setShowOffers(!showOffers)}>
                         ⚡ Offerte ({activeOffers.length})
                     </button>
@@ -315,6 +384,29 @@ export default function PlannerEditor({ initialPlan, userName, userGuidelines, a
                                                         )}
                                                     </div>
                                                 )}
+
+                                                {/* PHOTO UPLOAD / AI CHECK */}
+                                                <div style={{ marginTop: '5px' }}>
+                                                    {chefDetails?.photoUrl ? (
+                                                        <div style={{ position: 'relative', width: '100%', height: '100px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #475569', marginTop: '5px' }}>
+                                                            <img src={chefDetails.photoUrl} alt="Meal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            {chefDetails.aiRating && (
+                                                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', color: '#a3e635', fontSize: '0.7rem', padding: '2px 5px', textAlign: 'center' }}>
+                                                                    ✅ AI: {chefDetails.aiRating}/10
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleUploadClick(day, key)}
+                                                            disabled={uploading === `${day}-${key}`}
+                                                            style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'transparent', border: '1px dashed #475569', color: '#94a3b8', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', width: '100%', justifyContent: 'center' }}
+                                                        >
+                                                            <Camera size={14} />
+                                                            {uploading === `${day}-${key}` ? 'Caricamento...' : 'Foto'}
+                                                        </button>
+                                                    )}
+                                                </div>
 
 
                                                 {/* CHEF PREVIEW (New) */}

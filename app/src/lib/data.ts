@@ -105,6 +105,9 @@ export type MealDetails = {
     specificCarb?: string;      // e.g. "Patate" instead of "Pane"
     eaten?: boolean;
     rating?: 'up' | 'down';
+    photoUrl?: string;
+    aiAnalysis?: string;
+    aiRating?: number;
 };
 
 // ... existing code ...
@@ -167,6 +170,15 @@ export type FlyerInfo = {
     storeId?: string;
 };
 
+export type MealHistory = {
+    date: string;
+    user: string;
+    mealType: string;
+    mealName: string;
+    photoUrl?: string;
+    rating?: 'up' | 'down';
+};
+
 export type AppData = {
     currentUser: 'Michael' | 'Jessica';
     users: {
@@ -179,11 +191,11 @@ export type AppData = {
     activeOffers: ConadOffer[];
     lastOfferUpdate?: string;
     recipes?: Record<string, RecipeCacheItem>; // Cache for scraped recipes
-    syncStatus?: {
-        state: 'idle' | 'running' | 'success' | 'error';
-        message: string;
-        lastUpdate: number;
-    };
+    message: string;
+    lastUpdate: number;
+};
+history: MealHistory[];
+lastAutoRoutine ?: string;
 };
 
 export type RecipeCacheItem = {
@@ -229,7 +241,10 @@ const DEFAULT_DATA: AppData = {
     ],
     activeOffers: [],
     recipes: {},
-    syncStatus: { state: 'idle', message: '', lastUpdate: 0 }
+    activeOffers: [],
+    recipes: {},
+    syncStatus: { state: 'idle', message: '', lastUpdate: 0 },
+    history: [],
 };
 
 export async function togglePantryItem(item: string) {
@@ -251,8 +266,66 @@ export async function toggleMealEaten(dayName: string, mealType: string) {
     if (details) {
         details.eaten = !details.eaten;
         await saveData(data);
+
+        // Auto-Archive if eaten is true
+        if (details.eaten) {
+            await archiveMealAction({
+                date: new Date().toISOString().split('T')[0],
+                user: userRole,
+                mealType: mealType,
+                mealName: details.name,
+                photoUrl: details.photoUrl,
+                rating: details.rating
+            });
+        }
         revalidatePath('/');
     }
+}
+
+export async function archiveMealAction(entry: MealHistory) {
+    const data = await getData();
+    if (!data.history) data.history = [];
+
+    // Check if duplicate for same user/date/type? Overwrite or Append?
+    // Let's Append but avoid exact dupes if called multiple times quickly
+    const existingIndex = data.history.findIndex(h => h.date === entry.date && h.user === entry.user && h.mealType === entry.mealType);
+    if (existingIndex >= 0) {
+        // Update existing (maybe photo changed)
+        data.history[existingIndex] = entry;
+    } else {
+        data.history.push(entry);
+    }
+
+    await saveData(data);
+}
+
+export async function cleanupOldDataAction() {
+    const data = await getData();
+    if (!data.history) return;
+
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    // 1. Filter History
+    const initialCount = data.history.length;
+    data.history = data.history.filter(h => {
+        const d = new Date(h.date).getTime();
+        return (now - d) < THIRTY_DAYS_MS;
+    });
+
+    if (data.history.length < initialCount) {
+        console.log(`[CLEANUP] Removed ${initialCount - data.history.length} old history entries.`);
+        await saveData(data);
+    }
+
+    // 2. Clean Orphans in Public Uploads (Optional: requires file system scan)
+    // We can do this later.
+}
+
+export async function updateAutoRoutineDate() {
+    const data = await getData();
+    data.lastAutoRoutine = new Date().toISOString().split('T')[0];
+    await saveData(data);
 }
 
 export async function rateMeal(dayName: string, mealType: string, rating: 'up' | 'down' | undefined) {
@@ -283,6 +356,8 @@ export async function getData(): Promise<AppData> {
         if (!data.recipes) data.recipes = {};
         if (!data.conadFlyers) data.conadFlyers = [];
         if (!data.syncStatus) data.syncStatus = { state: 'idle', message: '', lastUpdate: 0 };
+        if (!data.history) data.history = [];
+
 
         // Force update guidelines to match latest code definitions
         data.users.Michael.guidelines = GUIDELINES;

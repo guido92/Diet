@@ -1,36 +1,56 @@
-import { getData, AppData } from '@/lib/data';
-import { GUIDELINES } from '@/lib/guidelines';
-import Link from 'next/link';
-import RecipeCard from '@/components/RecipeCard';
-import UserSwitcher from '@/components/UserSwitcher';
-import { DAYS_MAP, ENGLISH_DAYS } from '@/lib/constants';
-import { getPieceLabel } from '@/lib/conversions';
+import Link from "next/link";
+import { getData, updateAutoRoutineDate } from "@/lib/data";
+import { smartSyncOffersAction, generateBothPlansAction } from "@/lib/ai";
+import PlannerEditor from "@/components/PlannerEditor";
+import { Utensils, User, Users, Wand2, History as HistoryIcon } from "lucide-react";
 
 export default async function Home() {
-  const data: AppData = await getData();
-  // ENGLISH_DAYS is Mon-Sun (0-6).
-  // getDay() is Sun=0, Mon=1...
-  // So Monday(1) -> Index 0. Sunday(0) -> Index 6.
-  const dayIndex = new Date().getDay();
-  const todayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
-  const today = ENGLISH_DAYS[todayIndex];
+  const data = await getData();
+  const currentUser = data.currentUser;
+  const userRole = data.currentUser;
+  const plan = data.users[userRole].plan || {};
+  const activeOffers = data.activeOffers || [];
 
-  const activeUser = data.users[data.currentUser];
-  const todayPlan = activeUser.plan[today];
+  // SATURDAY AUTOMATION CHECK
+  let autoRoutineRan = false;
+  const today = new Date();
+  const isSaturday = today.getDay() === 6;
+  const todayStr = today.toISOString().split('T')[0];
 
-  const getMeal = (id: string) => GUIDELINES.find(g => g.id === id);
-
-  const startWeight = activeUser.startWeight;
-  const currentWeight = activeUser.currentWeight;
-  const lost = (startWeight - currentWeight).toFixed(1);
+  if (isSaturday && data.lastAutoRoutine !== todayStr) {
+    console.log('✨ TRIGGERING SATURDAY ROUTINE...');
+    // 1. Sync Offers
+    await smartSyncOffersAction();
+    // 2. Generate Plans
+    await generateBothPlansAction();
+    // 3. Mark as Done
+    await updateAutoRoutineDate();
+    autoRoutineRan = true;
+  }
 
   return (
-    <div style={{ paddingTop: '2rem' }}>
-      <UserSwitcher currentUser={data.currentUser} />
+    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+      {autoRoutineRan && (
+        <div style={{ background: '#22c55e', color: 'white', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', fontWeight: 'bold', textAlign: 'center' }}>
+          ✨ Routine del Sabato Completata: Volantini Sincronizzati e Piani Generati!
+        </div>
+      )}
 
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 className="title" style={{ fontSize: '2rem' }}>Ciao {data.currentUser}! 👋</h1>
-        <p className="subtitle">Continua così, sei sulla strada giusta.</p>
+      {/* HEADER */}
+      <header className="flex-between" style={{ marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h1 className="title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Utensils size={32} color="#22c55e" />
+          Diet Planner <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>v2.2 AI</span>
+        </h1>
+
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Link href="/history" className="btn" style={{ background: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <HistoryIcon size={18} /> Storico
+          </Link>
+          <Link href="/noi" className="btn" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #ec4899 100%)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Users size={18} /> Noi
+          </Link>
+        </div>
       </header>
 
       <div className="grid">
