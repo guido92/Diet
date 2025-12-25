@@ -142,11 +142,13 @@ export async function getData(): Promise<AppData> {
         }
 
         return data;
-    } catch {
+    } catch (error) {
+        console.error("CRITICAL ERROR LOADING DATA:", error);
+        console.log("Attempting to load FROM:", DATA_FILE);
         try {
             await saveData(DEFAULT_DATA);
-        } catch {
-            console.warn('Could not save default data (likely build environment)');
+        } catch (saveError) {
+            console.warn('Could not save default data (likely build environment):', saveError);
         }
         return DEFAULT_DATA;
     }
