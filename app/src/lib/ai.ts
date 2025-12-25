@@ -128,7 +128,12 @@ async function callOllama(prompt: string): Promise<string> {
     return data.response;
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('[OLLAMA] Failed:', msg);
+    // Suppress stack trace for connection errors
+    if (msg.includes('ENOTFOUND') || msg.includes('ECONNREFUSED')) {
+      console.warn(`[OLLAMA] unreachable at ${baseUrl} (Check Docker network or OLLAMA_HOST).`);
+    } else {
+      console.error('[OLLAMA] Failed:', msg);
+    }
     throw e;
   }
 }
@@ -942,7 +947,15 @@ async function extractOffersAI(text: string, storeName: string): Promise<ConadOf
     const responseText = (await callGeminiSafe(prompt, WORKER_MODELS)).trim();
     const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     const result = JSON.parse(jsonStr);
-    if (!Array.isArray(result) || result.length === 0) throw new Error('AI returned empty list');
+
+    // If it's a valid empty array, it means AI found nothing relevant (e.g. non-food flyer).
+    // Do not throw error, just accept it.
+    if (Array.isArray(result) && result.length === 0) {
+      console.log(`[AI EXTRACTION] Valid JSON but no offers found (likely non-food flyer).`);
+      return [];
+    }
+
+    if (!Array.isArray(result)) throw new Error('AI returned non-array JSON');
     return result;
   } catch (e: unknown) {
     console.error('Offers Extraction AI Failed:', e);
