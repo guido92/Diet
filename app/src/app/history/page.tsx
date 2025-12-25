@@ -1,6 +1,10 @@
 'use server';
 
+
+export const dynamic = 'force-dynamic';
+
 import { getData, cleanupOldDataAction } from '@/lib/data';
+
 import Link from 'next/link';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import Image from 'next/image';

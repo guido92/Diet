@@ -1,5 +1,8 @@
 import Tracker from '@/components/Tracker';
-import { getData } from '@/lib/data';
+
+export const dynamic = 'force-dynamic';
+
+import { getData, updateWeight, updateTargetWeight, addSgarro } from '@/lib/data';
 import UserSwitcher from '@/components/UserSwitcher';
 
 export default async function TrackerPage() {

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import PlannerEditor from '@/components/PlannerEditor';
 import { getData } from '@/lib/data';
 import UserSwitcher from '@/components/UserSwitcher';

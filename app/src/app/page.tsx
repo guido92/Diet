@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link";
 import { getData, updateAutoRoutineDate } from "@/lib/data";
 import { smartSyncOffersAction, generateBothPlansAction } from "@/lib/ai";

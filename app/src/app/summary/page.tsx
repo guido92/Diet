@@ -1,8 +1,9 @@
 import React from 'react';
-import { getData } from '@/lib/data';
-import CoupleManager from '../../components/CoupleManagerView';
 
 export const dynamic = 'force-dynamic';
+
+import { getData, saveCouplePlansAction } from '@/lib/data';
+import CoupleManager from '../../components/CoupleManagerView';
 
 export default async function SummaryPage() {
     const data = await getData();

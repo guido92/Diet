@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import ShoppingList from '@/components/ShoppingList';
 import { getData } from '@/lib/data';
 import UserSwitcher from '@/components/UserSwitcher';
