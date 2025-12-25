@@ -91,66 +91,89 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
             </div>
 
             {open && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.8)', zIndex: 1000,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
-                }}>
-                    <div className="card" style={{ width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+                <div
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.8)', zIndex: 1000,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+                    }}
+                    onClick={() => setOpen(false)}
+                >
+                    <div
+                        className="card"
+                        style={{
+                            width: '90%', maxWidth: '500px', maxHeight: '80vh',
+                            overflowY: 'auto', position: 'relative',
+                            background: '#1e293b', // Ensure background is set
+                            borderRadius: '16px'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button
                             onClick={() => setOpen(false)}
-                            style={{ position: 'absolute', top: '10px', right: '10px', background: 'transparent', color: '#94a3b8' }}
+                            style={{
+                                position: 'absolute', top: '15px', right: '15px',
+                                background: 'rgba(0,0,0,0.3)', color: '#fff',
+                                border: 'none', borderRadius: '50%',
+                                width: '32px', height: '32px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', zIndex: 10
+                            }}
                         >
-                            <X />
+                            <X size={20} />
                         </button>
 
-                        <h3 className="title" style={{ fontSize: '1.2rem', paddingRight: '20px' }}>Chef AI 👨‍🍳</h3>
-                        <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>{mealName}</p>
+                        <div style={{ padding: '1.5rem' }}>
+                            <h3 className="title" style={{ fontSize: '1.2rem', paddingRight: '20px', marginTop: 0 }}>Chef AI 👨‍🍳</h3>
+                            <p className="subtitle" style={{ fontSize: '0.9rem', marginBottom: '1rem', color: '#94a3b8' }}>{mealName}</p>
 
-                        {imageUrl && (
-                            <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid #334155' }}>
-                                <Image
-                                    src={imageUrl}
-                                    alt={mealName}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                />
-                            </div>
-                        )}
-
-                        {recipeUrl && (
-                            <a
-                                href={recipeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn"
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    background: '#eab308',
-                                    color: '#000',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 700,
-                                    marginBottom: '1.5rem',
-                                    padding: '12px'
-                                }}
-                            >
-                                <ExternalLink size={18} />
-                                Vedi Ricetta Originale (GialloZafferano)
-                            </a>
-                        )}
-
-                        <div className="markdown-body" style={{ marginTop: '1rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
-                            {loading ? (
-                                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                                    <div className="animate-spin" style={{ display: 'inline-block' }}>🍳</div>
-                                    <p>Sto preparando i consigli per {user}...</p>
+                            {imageUrl && (
+                                <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid #334155', position: 'relative' }}>
+                                    <Image
+                                        src={imageUrl}
+                                        alt={mealName}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                    />
                                 </div>
-                            ) : (
-                                <ReactMarkdown>{recipe || ''}</ReactMarkdown>
                             )}
+
+                            {recipeUrl && (
+                                <a
+                                    href={recipeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        background: '#eab308',
+                                        color: '#000',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 700,
+                                        marginBottom: '1.5rem',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    <ExternalLink size={18} />
+                                    Vedi Ricetta Originale (GialloZafferano)
+                                </a>
+                            )}
+
+                            <div className="markdown-body" style={{ marginTop: '1rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                {loading ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <div className="animate-spin" style={{ display: 'inline-block', fontSize: '2rem', marginBottom: '1rem' }}>🍳</div>
+                                        <p style={{ color: '#94a3b8' }}>Sto preparando i consigli per {user}...</p>
+                                    </div>
+                                ) : (
+                                    <ReactMarkdown>{recipe || ''}</ReactMarkdown>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

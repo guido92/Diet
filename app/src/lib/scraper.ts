@@ -37,11 +37,16 @@ export async function searchGialloZafferano(query: string): Promise<RecipeResult
         if (!firstCard.length) return null;
 
         const titleParams = firstCard.find('.gz-title a');
-        const link = titleParams.attr('href');
+        let link = titleParams.attr('href');
         const title = titleParams.text().trim();
         const img = firstCard.find('img').attr('data-src') || firstCard.find('img').attr('src');
 
         if (link && title) {
+            // Fix absolute URL
+            if (link.startsWith('/')) {
+                link = `https://www.giallozafferano.it${link}`;
+            }
+
             return {
                 url: link,
                 title: title,

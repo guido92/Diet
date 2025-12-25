@@ -280,7 +280,7 @@ async function enrichPlanWithRecipes(plan: WeeklyPlan) {
       if (result) {
         meal.recipeUrl = result.url;
         meal.imageUrl = result.imageUrl;
-        // Save to cache
+        // Save to cache (merge)
         await saveRecipeAction(meal.name, {
           url: result.url,
           imageUrl: result.imageUrl,

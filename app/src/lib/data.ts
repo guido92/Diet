@@ -189,6 +189,7 @@ export type AppData = {
 export type RecipeCacheItem = {
     url: string;
     imageUrl?: string;
+    aiContent?: string;
     lastChecked: string;
 };
 
@@ -432,7 +433,11 @@ export async function getRecipeAction(mealName: string): Promise<RecipeCacheItem
 export async function saveRecipeAction(mealName: string, recipe: RecipeCacheItem) {
     const data = await getData();
     if (!data.recipes) data.recipes = {};
-    data.recipes[mealName] = recipe;
+
+    // Merge with existing to preserve AI content if we are just updating link/image, or vice versa
+    const existing = data.recipes[mealName] || {};
+    data.recipes[mealName] = { ...existing, ...recipe };
+
     await saveData(data);
 }
 
