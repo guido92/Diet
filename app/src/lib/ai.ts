@@ -536,9 +536,19 @@ export async function generateCouplePlanPreviewAction(): Promise<{ success: bool
   try {
     console.log('Generating Combined Plan Preview for Michael & Jessica...');
 
-    // 1. Generate INDEPENDENT SAFE PLANS
-    const planMichael = await generateWeeklyPlanAI('Michael');
-    const planJessica = await generateWeeklyPlanAI('Jessica');
+    // 1. Generate INDEPENDENT SAFE PLANS (Parallelized to prevent timeouts)
+    console.log('Starting parallel generation...');
+    const [planMichael, planJessica] = await Promise.all([
+      generateWeeklyPlanAI('Michael').catch(e => {
+        console.error('Error generating Michael plan:', e);
+        throw new Error('Fallito piano Michael: ' + e.message);
+      }),
+      generateWeeklyPlanAI('Jessica').catch(e => {
+        console.error('Error generating Jessica plan:', e);
+        throw new Error('Fallito piano Jessica: ' + e.message);
+      })
+    ]);
+    console.log('Parallel generation complete.');
 
     // 3. SYNCHRONIZE SHARED MEALS
     const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
