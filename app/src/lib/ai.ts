@@ -774,7 +774,7 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
 
           if (pdfMatches && pdfMatches[0]) {
             const pdfUrl = pdfMatches[0].replace(/\\u0026/g, '&');
-            const IGNORED_KEYWORDS = ['CONAD_PAY', 'CaseCura', 'viaggi', 'assicurazioni', 'manuale', 'regolamento', 'flyer_scelte_stagione', 'distributore', 'A4_Mipremio', 'A4_HeyCND', 'WEB_Leaflet_CaseCura', 'scelte_stagione', 'A4_Distributore'];
+            const IGNORED_KEYWORDS = ['CONAD_PAY', 'viaggi', 'assicurazioni', 'manuale', 'regolamento', 'flyer_scelte_stagione', 'distributore', 'A4_Mipremio', 'A4_HeyCND', 'WEB_Leaflet_CaseCura', 'scelte_stagione', 'A4_Distributore'];
             if (IGNORED_KEYWORDS.some(k => pdfUrl.includes(k))) continue;
             if (pdfUrl.includes('/renditions/') || pdfUrl.includes('/thumbs/') || pdfUrl.toLowerCase().endsWith('.webp')) continue;
 
@@ -977,7 +977,7 @@ async function extractOffersAI(text: string, storeName: string): Promise<ConadOf
     Restituisci un array JSON di oggetti che seguono l'interfaccia ConadOffer:
     
     interface ConadOffer {
-      categoria: string;
+      categoria: 'Alimentari' | 'Casa' | 'Persona' | 'Altro';
       prodotto: string;
       prezzo: string;
       unita: string; 
@@ -988,7 +988,10 @@ async function extractOffersAI(text: string, storeName: string): Promise<ConadOf
 
     REGOLE:
     - Sii conciso.
-    - Estrai solo prodotti alimentari rilevanti per una dieta (evita snack, bibite zuccherate, alcolici).
+    - Estrai prodotti ALIMENTARI (Carne, Pesce, Frutta, Verdura, Latticini).
+    - Estrai prodotti per la CASA (Detersivi, Pulizia).
+    - Estrai prodotti per la PERSONA (Shampoo, Sapone, Dentifricio).
+    - IGNORA: Snack dolci, Alcolici, Giocattoli, Telefonia.
     - Restituisci SOLO il JSON raw.
     - Testo volantino:
     ---
@@ -1052,7 +1055,9 @@ function extractOffersLocal(text: string, storeName: string): ConadOffer[] {
     'Frutta': 'mele,pere,banane,arance,limoni,mandarini,uva,kivi,ananas',
     'Verdura': 'insalata,pomodori,zucchine,melanzane,peperoni,patate,carote,spinaci',
     'Latticini': 'latte,yogurt,mozzarella,formaggio,parmigiano,grana,burro,ricotta',
-    'Dispensa': 'pasta,riso,olio,tonno,caffè,biscotti,passata,fagioli,legumi'
+    'Dispensa': 'pasta,riso,olio,tonno,caffè,biscotti,passata,fagioli,legumi',
+    'Casa': 'detersivo,lavatrice,ammorbidente,pavimenti,sgrassatore,candeggina,carta igienica,scottex,fazzoletti,tovaglioli',
+    'Persona': 'shampoo,bagnoschiuma,sapone,dentifricio,deodorante,crema,capelli,viso,corpo'
   };
 
   for (let i = 0; i < cleanedLines.length; i++) {

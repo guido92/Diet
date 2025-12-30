@@ -49,25 +49,33 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
     const [showPantry, setShowPantry] = useState(false);
 
     // UX Overhaul States
+    const [activeTab, setActiveTab] = useState<'Alimentari' | 'Casa'>('Alimentari');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
     const [isOffersExpanded, setIsOffersExpanded] = useState(false);
 
-    const uniqueCategories = useMemo(() => {
-        const cats = new Set(activeOffers.map(o => o.categoria));
-        return Array.from(cats).sort();
-    }, [activeOffers]);
-
     const filteredOffers = useMemo(() => {
         return activeOffers.filter(offer => {
+            // Filter by Tab
+            const isHousehold = offer.categoria === 'Casa' || offer.categoria === 'Persona' || (offer.categoria === 'Altro' && ['detersivo', 'sapone', 'shampoo', 'carta'].some(k => offer.prodotto.toLowerCase().includes(k)));
+            if (activeTab === 'Alimentari' && isHousehold) return false;
+            if (activeTab === 'Casa' && !isHousehold) return false;
+
             const matchesSearch = offer.prodotto.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 offer.categoria.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = selectedCategory === 'ALL' || offer.categoria === selectedCategory;
             return matchesSearch && matchesCategory;
         });
-    }, [activeOffers, searchTerm, selectedCategory]);
+    }, [activeOffers, searchTerm, selectedCategory, activeTab]);
+
+    const uniqueCategories = useMemo(() => {
+        const cats = new Set(filteredOffers.map(o => o.categoria));
+        return Array.from(cats).sort();
+    }, [filteredOffers]);
 
     const aggregatedIngredients = useMemo(() => {
+        if (activeTab === 'Casa') return [];
+
         const totals: Record<string, { amount: number; unit: string; owners: Set<string>; subItems?: Record<string, number>; store?: string }> = {};
         const seasonalFruit = getSeasonalFruit();
         const seasonalVeg = getSeasonalVeg();
@@ -172,7 +180,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
             });
         });
         return Object.entries(totals).sort((a, b) => a[0].localeCompare(b[0]));
-    }, [profiles, activeOffers]);
+    }, [profiles, activeOffers, activeTab]);
 
     const activeList = useMemo(() => aggregatedIngredients.filter(([name]) => !pantryItems.includes(name)), [aggregatedIngredients, pantryItems]);
     const inPantryList = useMemo(() => aggregatedIngredients.filter(([name]) => pantryItems.includes(name)), [aggregatedIngredients, pantryItems]);
@@ -181,7 +189,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
         // ... existing implementation ...
         if (!newItemName) return;
         setLoading(true);
-        await addManualShoppingItem(newItemName, newItemAmount || '1', parseFloat(newItemPrice) || 0);
+        await addManualShoppingItem(newItemName, newItemAmount || '1', parseFloat(newItemPrice) || 0, activeTab);
         setNewItemName(''); setNewItemAmount(''); setNewItemPrice('');
         setLoading(false);
         // window.location.reload(); // handled by props update usually, but trigger standard reload for simplicity
@@ -236,7 +244,11 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
     const handleAddOffer = async (offer: ConadOffer) => {
         setLoading(true);
         const price = parseFloat(offer.prezzo.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-        await addManualShoppingItem(offer.prodotto, offer.unita || '1', price);
+        // Infer Category
+        const isHousehold = offer.categoria === 'Casa' || offer.categoria === 'Persona' || (offer.categoria === 'Altro' && ['detersivo', 'sapone', 'shampoo', 'carta'].some(k => offer.prodotto.toLowerCase().includes(k)));
+        const category = isHousehold ? 'Casa' : 'Alimentari';
+
+        await addManualShoppingItem(offer.prodotto, offer.unita || '1', price, category);
         setLoading(false);
         window.location.reload();
     };
@@ -292,7 +304,11 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
         return `${count} ${pack.label}${plural}`;
     };
 
-    const totalPrice = manualItems.reduce((acc, item) => acc + (item.checked ? 0 : item.price), 0);
+    const totalPrice = manualItems
+        .filter(item => (item.category || 'Alimentari') === activeTab)
+        .reduce((acc, item) => acc + (item.checked ? 0 : item.price), 0);
+
+    const displayManualItems = manualItems.filter(item => (item.category || 'Alimentari') === activeTab);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '5rem' }}>
@@ -323,12 +339,51 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             {loading ? 'Sincronizzazione...' : 'Aggiorna Offerte'}
                         </button>
                     </div>
+
                     {/* Status Feedback */}
                     {loading && syncStatusMsg && (
                         <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.2)' }}>
                             <Loader2 className="animate-spin" size={14} /> {syncStatusMsg}
                         </div>
                     )}
+
+                    {/* TABS SELECTOR */}
+                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '12px', marginTop: '5px' }}>
+                        <button
+                            onClick={() => setActiveTab('Alimentari')}
+                            style={{
+                                flex: 1,
+                                background: activeTab === 'Alimentari' ? 'white' : 'transparent',
+                                color: activeTab === 'Alimentari' ? '#0ea5e9' : 'rgba(255,255,255,0.7)',
+                                border: 'none',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                            }}>
+                            🍏 Alimentari
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('Casa')}
+                            style={{
+                                flex: 1,
+                                background: activeTab === 'Casa' ? 'white' : 'transparent',
+                                color: activeTab === 'Casa' ? '#0ea5e9' : 'rgba(255,255,255,0.7)',
+                                border: 'none',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                            }}>
+                            🧼 Casa & Persona
+                        </button>
+                    </div>
 
                     {conadFlyers.length > 0 && (
                         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
@@ -361,7 +416,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                 </div>
             </div>
 
-            {/* Active Offers from AI Scan (Collapsible) */}
+            {/* Active Offers from AI Scan (Collapsible) - FILTERED BY TAB */}
             {activeOffers.length > 0 && (
                 <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid rgba(234, 179, 8, 0.4)', background: 'rgba(234, 179, 8, 0.05)' }}>
                     <div
@@ -370,10 +425,10 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                         onClick={() => setIsOffersExpanded(!isOffersExpanded)}
                     >
                         <h3 className="subtitle" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#eab308' }}>
-                            <Zap size={18} fill="#eab308" /> Offerte Volantino
+                            <Zap size={18} fill="#eab308" /> Offerte {activeTab}
                         </h3>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '0.85rem', color: '#eab308', fontWeight: 600 }}>{activeOffers.length} attive</span>
+                            <span style={{ fontSize: '0.85rem', color: '#eab308', fontWeight: 600 }}>{filteredOffers.length} rilevanti</span>
                             {isOffersExpanded ? <ChevronUp size={18} color="#eab308" /> : <ChevronDown size={18} color="#eab308" />}
                         </div>
                     </div>
@@ -388,7 +443,7 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                                     <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                                     <input
                                         type="text"
-                                        placeholder="Cerca offerte (es. Tonno, Pasta...)"
+                                        placeholder={`Cerca offerte ${activeTab}...`}
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                         style={{
@@ -518,152 +573,156 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
             {/* Manual Add Form */}
             <div className="card">
                 <h3 className="subtitle" style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Plus size={18} /> Aggiungi extra (es. detersivo, offerte volantino)
+                    <Plus size={18} /> Aggiungi {activeTab === 'Alimentari' ? 'cibo extra' : 'casa/persona'}
                 </h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '1rem' }}>
-                    <input type="text" placeholder="Nome" value={newItemName} onChange={e => setNewItemName(e.target.value)} style={{ flex: '2 1 150px', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white' }} />
+                    <input type="text" placeholder={`Nome (es. ${activeTab === 'Alimentari' ? 'Patatine' : 'Detersivo'})`} value={newItemName} onChange={e => setNewItemName(e.target.value)} style={{ flex: '2 1 150px', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white' }} />
                     <input type="text" placeholder="Q.tà" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} style={{ flex: '1 1 80px', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white' }} />
                     <input type="number" placeholder="€" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} style={{ flex: '1 1 80px', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white' }} />
                     <button className="btn btn-primary" onClick={handleAddItem} disabled={loading} style={{ flex: '0 0 auto', width: 'auto', padding: '10px 20px', borderRadius: '8px' }}>Aggiungi</button>
                 </div>
             </div>
 
-            {/* Aggregated List (from Diet) */}
-            <div>
-                <div className="flex-between" style={{ marginBottom: '0.5rem' }}>
-                    <h3 className="subtitle" style={{ marginLeft: '0.5rem', marginBottom: 0 }}>Dalla vostra Dieta 🥗</h3>
-                    <button className="btn" style={{ background: '#22c55e', color: 'white', width: 'auto', padding: '6px 12px', fontSize: '0.8rem' }} onClick={handleShareWhatsApp}>
-                        <Share2 size={16} style={{ marginRight: '6px' }} /> Share WhatsApp
-                    </button>
-                </div>
+            {/* Aggregated List (from Diet) - ONLY IF ALIMENTARI */}
+            {activeTab === 'Alimentari' && (
+                <div>
+                    <div className="flex-between" style={{ marginBottom: '0.5rem' }}>
+                        <h3 className="subtitle" style={{ marginLeft: '0.5rem', marginBottom: 0 }}>Dalla vostra Dieta 🥗</h3>
+                        <button className="btn" style={{ background: '#22c55e', color: 'white', width: 'auto', padding: '6px 12px', fontSize: '0.8rem' }} onClick={handleShareWhatsApp}>
+                            <Share2 size={16} style={{ marginRight: '6px' }} /> Share WhatsApp
+                        </button>
+                    </div>
 
-                <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
-                    {(() => {
-                        // Group Items
-                        const groups: Record<string, typeof activeList> = {};
+                    <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'transparent' }}>
+                        {(() => {
+                            // Group Items
+                            const groups: Record<string, typeof activeList> = {};
 
-                        activeList.forEach((item) => {
-                            const [_, data] = item;
-                            const store = data.store || 'Generico';
-                            if (!groups[store]) groups[store] = [];
-                            groups[store].push(item);
-                        });
+                            activeList.forEach((item) => {
+                                const [_, data] = item;
+                                const store = data.store || 'Generico';
+                                if (!groups[store]) groups[store] = [];
+                                groups[store].push(item);
+                            });
 
-                        // Sort Keys: Put "Generico" last, others alphabetical
-                        const sortedKeys = Object.keys(groups).sort((a, b) => {
-                            if (a === 'Generico') return 1;
-                            if (b === 'Generico') return -1;
-                            return a.localeCompare(b);
-                        });
+                            // Sort Keys: Put "Generico" last, others alphabetical
+                            const sortedKeys = Object.keys(groups).sort((a, b) => {
+                                if (a === 'Generico') return 1;
+                                if (b === 'Generico') return -1;
+                                return a.localeCompare(b);
+                            });
 
-                        // Render Sections
-                        return sortedKeys.map((storeName) => {
-                            const items = groups[storeName];
-                            if (items.length === 0) return null;
+                            // Render Sections
+                            return sortedKeys.map((storeName) => {
+                                const items = groups[storeName];
+                                if (items.length === 0) return null;
 
-                            let headerColor = '#94a3b8';
-                            let headerIcon = <CheckSquare size={16} />;
-                            let bg = '#1e293b';
+                                let headerColor = '#94a3b8';
+                                let headerIcon = <CheckSquare size={16} />;
+                                let bg = '#1e293b';
 
-                            if (storeName.includes('Conad')) {
-                                headerColor = '#eab308';
-                                headerIcon = <Zap size={16} />;
-                                bg = 'rgba(234, 179, 8, 0.05)';
-                            } else if (storeName.includes('Eccomi')) {
-                                headerColor = '#06b6d4'; // Cyan
-                                headerIcon = <Sparkles size={16} />;
-                                bg = 'rgba(6, 182, 212, 0.05)';
-                            }
+                                if (storeName.includes('Conad')) {
+                                    headerColor = '#eab308';
+                                    headerIcon = <Zap size={16} />;
+                                    bg = 'rgba(234, 179, 8, 0.05)';
+                                } else if (storeName.includes('Eccomi')) {
+                                    headerColor = '#06b6d4'; // Cyan
+                                    headerIcon = <Sparkles size={16} />;
+                                    bg = 'rgba(6, 182, 212, 0.05)';
+                                }
 
-                            return (
-                                <div key={storeName} style={{ marginBottom: '16px', background: bg, borderRadius: '12px', border: `1px solid ${storeName === 'Generico' ? '#334155' : headerColor + '40'}` }}>
-                                    {storeName !== 'Generico' && (
-                                        <div style={{ padding: '10px 16px', borderBottom: `1px solid ${headerColor}20`, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ color: headerColor }}>{headerIcon}</span>
-                                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                {storeName}
-                                            </h4>
+                                return (
+                                    <div key={storeName} style={{ marginBottom: '16px', background: bg, borderRadius: '12px', border: `1px solid ${storeName === 'Generico' ? '#334155' : headerColor + '40'}` }}>
+                                        {storeName !== 'Generico' && (
+                                            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${headerColor}20`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: headerColor }}>{headerIcon}</span>
+                                                <h4 style={{ margin: 0, fontSize: '0.9rem', color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                    {storeName}
+                                                </h4>
+                                            </div>
+                                        )}
+
+                                        <div style={{ padding: '0 16px' }}>
+                                            {items.map(([name, data]) => {
+                                                const isChecked = checkedItems[name];
+                                                const packSuggestion = getPackInfo(name, data.amount, data.subItems);
+                                                const matchingOffer = activeOffers.find(o => o.prodotto.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(o.prodotto.toLowerCase()));
+
+                                                return (
+                                                    <div key={name} className="flex-between" style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', opacity: isChecked ? 0.5 : 1 }}>
+                                                        <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <span style={{ textDecoration: isChecked ? 'line-through' : 'none', fontWeight: 600 }}>{name}</span>
+                                                                {matchingOffer && <Percent size={14} color="#eab308" />}
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                                                                <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 700 }}>{data.amount}{data.unit}</span>
+                                                                {packSuggestion && <span style={{ fontSize: '0.75rem', background: '#0f172a', padding: '2px 8px', borderRadius: '4px', border: '1px solid #334155' }}>💡 {packSuggestion}</span>}
+                                                                {matchingOffer && (
+                                                                    <span style={{ fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
+                                                                        PROMO {matchingOffer.negozio ? `(${matchingOffer.negozio})` : ''}: {matchingOffer.prezzo}
+                                                                    </span>
+                                                                )}
+                                                                <span style={{ fontSize: '0.65rem', color: '#64748b' }}>({Array.from(data.owners).join(' + ')})</span>
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                            <button onClick={(e) => { e.stopPropagation(); togglePantry(name); }} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }} title="Metti in dispensa">
+                                                                <Archive size={18} />
+                                                            </button>
+                                                            <div onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))} style={{ cursor: 'pointer' }}>
+                                                                {isChecked ? <CheckSquare color="#10b981" /> : <Square color="#94a3b8" />}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    )}
-
-                                    <div style={{ padding: '0 16px' }}>
-                                        {items.map(([name, data]) => {
-                                            const isChecked = checkedItems[name];
-                                            const packSuggestion = getPackInfo(name, data.amount, data.subItems);
-                                            const matchingOffer = activeOffers.find(o => o.prodotto.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(o.prodotto.toLowerCase()));
-
-                                            return (
-                                                <div key={name} className="flex-between" style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', opacity: isChecked ? 0.5 : 1 }}>
-                                                    <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                            <span style={{ textDecoration: isChecked ? 'line-through' : 'none', fontWeight: 600 }}>{name}</span>
-                                                            {matchingOffer && <Percent size={14} color="#eab308" />}
-                                                        </div>
-                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                                                            <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 700 }}>{data.amount}{data.unit}</span>
-                                                            {packSuggestion && <span style={{ fontSize: '0.75rem', background: '#0f172a', padding: '2px 8px', borderRadius: '4px', border: '1px solid #334155' }}>💡 {packSuggestion}</span>}
-                                                            {matchingOffer && (
-                                                                <span style={{ fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
-                                                                    PROMO {matchingOffer.negozio ? `(${matchingOffer.negozio})` : ''}: {matchingOffer.prezzo}
-                                                                </span>
-                                                            )}
-                                                            <span style={{ fontSize: '0.65rem', color: '#64748b' }}>({Array.from(data.owners).join(' + ')})</span>
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                        <button onClick={(e) => { e.stopPropagation(); togglePantry(name); }} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }} title="Metti in dispensa">
-                                                            <Archive size={18} />
-                                                        </button>
-                                                        <div onClick={() => setCheckedItems(p => ({ ...p, [name]: !p[name] }))} style={{ cursor: 'pointer' }}>
-                                                            {isChecked ? <CheckSquare color="#10b981" /> : <Square color="#94a3b8" />}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
                                     </div>
-                                </div>
-                            );
-                        });
-                    })()}
+                                );
+                            });
+                        })()}
 
-                    {activeList.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Nulla da comprare (tutto in dispensa?)</div>}
+                        {activeList.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Nulla da comprare (tutto in dispensa?)</div>}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Pantry List (Hidden by default) */}
-            <div className="card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #334155' }}>
-                <div className="flex-between" onClick={() => setShowPantry(!showPantry)} style={{ cursor: 'pointer' }}>
-                    <h3 className="subtitle" style={{ fontSize: '0.9rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8' }}>
-                        <Package size={16} /> Dispensa ({inPantryList.length})
-                    </h3>
-                    {showPantry ? <ChevronUp size={16} color="#94a3b8" /> : <ChevronDown size={16} color="#94a3b8" />}
-                </div>
-
-                {showPantry && (
-                    <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {inPantryList.map(([name, data]) => (
-                            <div key={name} style={{ background: '#1e293b', borderRadius: '8px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #334155' }}>
-                                <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>{name}</span>
-                                <button onClick={() => togglePantry(name)} style={{ background: 'transparent', border: 'none', color: '#22c55e', cursor: 'pointer', display: 'flex' }}>
-                                    <Plus size={14} />
-                                </button>
-                            </div>
-                        ))}
-                        {inPantryList.length === 0 && <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Dispensa vuota.</span>}
+            {activeTab === 'Alimentari' && (
+                <div className="card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #334155' }}>
+                    <div className="flex-between" onClick={() => setShowPantry(!showPantry)} style={{ cursor: 'pointer' }}>
+                        <h3 className="subtitle" style={{ fontSize: '0.9rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8' }}>
+                            <Package size={16} /> Dispensa ({inPantryList.length})
+                        </h3>
+                        {showPantry ? <ChevronUp size={16} color="#94a3b8" /> : <ChevronDown size={16} color="#94a3b8" />}
                     </div>
-                )}
-            </div>
 
-            {/* Manual List */}
-            {manualItems.length > 0 && (
+                    {showPantry && (
+                        <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                            {inPantryList.map(([name, data]) => (
+                                <div key={name} style={{ background: '#1e293b', borderRadius: '8px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #334155' }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>{name}</span>
+                                    <button onClick={() => togglePantry(name)} style={{ background: 'transparent', border: 'none', color: '#22c55e', cursor: 'pointer', display: 'flex' }}>
+                                        <Plus size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                            {inPantryList.length === 0 && <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Dispensa vuota.</span>}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Manual List - FILTERED */}
+            {displayManualItems.length > 0 && (
                 <div>
                     <h3 className="subtitle" style={{ marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Extra & Offerte 🏷️</span>
+                        <span>Extra & Offerte {activeTab === 'Casa' ? 'Casa' : 'Alimentari'} 🏷️</span>
                         <span style={{ color: '#10b981' }}>Est. Totale: €{totalPrice.toFixed(2)}</span>
                     </h3>
                     <div className="card">
-                        {manualItems.map((item) => (
+                        {displayManualItems.map((item) => (
                             <div key={item.id} className="flex-between" style={{ padding: '12px 0', borderBottom: '1px solid #334155', opacity: item.checked ? 0.5 : 1 }}>
                                 <div style={{ flex: 1 }} onClick={() => handleToggleManual(item.id)}>
                                     <span style={{ textDecoration: item.checked ? 'line-through' : 'none', fontWeight: 600 }}>{item.name}</span>
@@ -683,6 +742,12 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {displayManualItems.length === 0 && activeTab === 'Casa' && (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontSize: '0.9rem' }}>
+                    Nessun articolo per la casa aggiunto.
                 </div>
             )}
         </div>

@@ -362,6 +362,7 @@ export type ManualItem = {
     amount: string;
     price: number;
     checked: boolean;
+    category?: 'Alimentari' | 'Casa'; // Added for improved organization
 };
 
 export type ConadOffer = {
@@ -594,14 +595,15 @@ export async function clearActiveOffers() {
     revalidatePath('/shopping');
 }
 
-export async function addManualShoppingItem(name: string, amount: string, price: number) {
+export async function addManualShoppingItem(name: string, amount: string, price: number, category: 'Alimentari' | 'Casa' = 'Alimentari') {
     const data = await getData();
     const newItem: ManualItem = {
         id: Math.random().toString(36).substr(2, 9),
         name,
         amount,
         price,
-        checked: false
+        checked: false,
+        category
     };
     data.manualShoppingItems.push(newItem);
     await saveData(data);
