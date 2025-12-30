@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { AppData, updateWeight, addSgarro } from '@/lib/data';
+import { AppData, updateWeight, addSgarro, removeSgarro } from '@/lib/data';
 import { Line } from 'react-chartjs-2';
+import { Trash2 } from 'lucide-react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -140,8 +141,23 @@ export default function Tracker({ data }: Props) {
                 <h3 className="subtitle">Diario Sgarri</h3>
                 <ul style={{ listStyle: 'none', fontSize: '0.9rem', color: '#94a3b8' }}>
                     {activeUser.logs.filter(l => l.notes).map((l, i) => (
-                        <li key={i} style={{ padding: '4px 0', borderBottom: '1px solid #334155' }}>
-                            <span style={{ color: '#f8fafc' }}>{l.date}:</span> {l.notes}
+                        <li key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid #334155' }}>
+                            <div>
+                                <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{l.date}:</span> <span style={{ color: '#cbd5e1' }}>{l.notes}</span>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    if (confirm('Eliminare questo sgarro?')) {
+                                        setLoading(true);
+                                        await removeSgarro(l.date, l.notes || '');
+                                        setLoading(false);
+                                        window.location.reload();
+                                    }
+                                }}
+                                style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                            >
+                                <Trash2 size={16} />
+                            </button>
                         </li>
                     ))}
                 </ul>

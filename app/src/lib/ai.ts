@@ -150,6 +150,16 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
   const seasonalFruit = getSeasonalFruit();
   const seasonalVeg = getSeasonalVeg();
 
+  // User Profile Data
+  const profile = data.users[user];
+  const userPreferences = {
+    intolerances: profile.intolerances,
+    dislikes: profile.dislikes,
+    allergies: profile.allergies,
+    goal: profile.targetWeight < profile.currentWeight ? 'Perdita di Peso' : 'Mantenimento',
+    bmi: profile.height > 0 ? (profile.currentWeight / ((profile.height / 100) * (profile.height / 100))).toFixed(1) : 'N/A'
+  };
+
   console.log(`Generating plan for ${user} considering ${activeOffers.length} offers and ${pantryItems.length} pantry items...`);
 
   const prompt = `
@@ -168,8 +178,14 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
       - Offerte Volantino (OPZIONALI MA CONSIGLIATE): ${JSON.stringify(activeOffers)}
       - Frutta Stagione: ${JSON.stringify(seasonalFruit)}
       - Verdura Stagione: ${JSON.stringify(seasonalVeg)}
+      - **PROFILO & PREFERENZE UTENTE (IMPORTANTE)**: ${JSON.stringify(userPreferences)}
       
       REGOLE FONDAMENTALI:
+      0. **RISPETTO PREFERENZE**:
+         - **ALLERGIE**: EVITARE ASSOLUTAMENTE ingredienti listati in 'allergies'.
+         - **GUSTI**: Evitare se possibile ingredienti listati in 'dislikes' o 'intolerances'.
+         - **OBIETTIVO**: ${userPreferences.goal}. Se 'Perdita di Peso', mantieni le porzioni leggere e sazianti.
+
       1. **DIETA RIGIDA (LUN-GIO)**:
          - **ASSOLUTAMENTE NESSUN "PASTO LIBERO", "PIZZA", "SUSHI" O "AMICI" DA LUNEDÌ A GIOVEDÌ.**
          - Giovedì è un giorno DI DIETA come gli altri. Niente eccezioni.

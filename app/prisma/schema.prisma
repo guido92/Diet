@@ -46,6 +46,14 @@ model UserProfile {
   targetWeight   Float
   height         Float
   
+  birthDate      DateTime?
+  sex            String    @default("M") // M, F
+  activityLevel  String    @default("sedentary") // sedentary, light, moderate, active, very_active
+  
+  intolerances   String?   // Comma separated
+  dislikes       String?   // Comma separated
+  allergies      String?   // Comma separated
+  
   logs           WeightLog[]
 }
 

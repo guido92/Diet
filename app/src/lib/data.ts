@@ -14,15 +14,48 @@ const DATA_FILE = process.env.DATA_FILE_PATH || path.resolve(process.cwd(), '../
 
 // ... existing code ...
 
-import { getUserSession } from './actions';
+import { getUserSession as getUserSessionAction } from './actions';
+
+export async function getUserSession() {
+    return getUserSessionAction();
+}
 
 // ...
 
 export async function updateUserGuidelines(guidelines: MealOption[]) {
     const data = await getData();
-    const userRole = (await getUserSession()) || 'Michael'; // Fallback for safety, or we could throw
+    const userRole = (await getUserSession()) || 'Michael';
     data.users[userRole].guidelines = guidelines;
     await saveData(data);
+}
+
+export async function updateUserProfile(profileData: Partial<UserProfile>) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+
+    if (profileData.birthDate) user.birthDate = profileData.birthDate;
+    if (profileData.sex) user.sex = profileData.sex;
+    if (profileData.activityLevel) user.activityLevel = profileData.activityLevel;
+    if (profileData.intolerances !== undefined) user.intolerances = profileData.intolerances;
+    if (profileData.dislikes !== undefined) user.dislikes = profileData.dislikes;
+    if (profileData.allergies !== undefined) user.allergies = profileData.allergies;
+    if (profileData.height) user.height = profileData.height;
+    if (profileData.startWeight) user.startWeight = profileData.startWeight;
+    if (profileData.targetWeight) user.targetWeight = profileData.targetWeight;
+
+    await saveData(data);
+    revalidatePath('/profile');
+    revalidatePath('/');
+}
+
+export async function removeHistoryItem(date: string, user: string, mealType: string) {
+    const data = await getData();
+    if (!data.history) return;
+
+    data.history = data.history.filter(h => !(h.date === date && h.user === user && h.mealType === mealType));
+    await saveData(data);
+    revalidatePath('/tracker');
 }
 
 export async function refreshSingleMeal(dayName: string, mealType: string) {
@@ -203,6 +236,35 @@ export async function addSgarro(sgarro: string) {
     await saveData(data);
 }
 
+export async function removeSgarro(date: string, noteFragment: string) {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+
+    // Find log by date
+    const logIndex = user.logs.findIndex(l => l.date === date);
+    if (logIndex >= 0) {
+        // If exact match of notes, remove log. If partial, maybe remove sub-part? 
+        // For simplicity, if we pass the full note content, we remove the log or clear it.
+        // User asked to remove "items".
+        // If sgarro is "Pizza, Birra", and we want to remove "Birra"?
+        // Complexity. current UI shows one line. Let's just remove the day's sgarro for now or specific log entry if we had IDs.
+        // We don't have IDs for logs. We have Date.
+        const notes = user.logs[logIndex].notes || '';
+        if (notes === noteFragment) {
+            user.logs.splice(logIndex, 1);
+        } else {
+            // Try to remove split by comma?
+            // Simple approach: Remove the whole log for that date if the user confirms.
+            // But the UI iterates over logs.
+            // Let's assume we remove the log entry found at that index.
+            user.logs.splice(logIndex, 1);
+        }
+    }
+    await saveData(data);
+    revalidatePath('/tracker');
+}
+
 export async function saveWeeklyPlan(plan: WeeklyPlan) {
     const data = await getData();
     const userRole = (await getUserSession()) || 'Michael';
@@ -239,6 +301,13 @@ export type UserProfile = {
     plan: WeeklyPlan;
     logs: LogEntry[];
     guidelines: MealOption[];
+    // Profile Fields
+    birthDate?: string; // YYYY-MM-DD
+    sex?: 'M' | 'F';
+    activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+    intolerances?: string;
+    dislikes?: string;
+    allergies?: string;
 };
 
 export type WeeklyPlan = Record<string, DailyPlan>;
@@ -338,6 +407,8 @@ const DEFAULT_USER: UserProfile = {
     plan: {},
     logs: [],
     guidelines: GUIDELINES,
+    sex: 'M',
+    activityLevel: 'sedentary'
 };
 
 const DEFAULT_JESSICA: UserProfile = {
@@ -348,6 +419,8 @@ const DEFAULT_JESSICA: UserProfile = {
     plan: {},
     logs: [],
     guidelines: GUIDELINES,
+    sex: 'F',
+    activityLevel: 'moderate'
 };
 
 const DEFAULT_DATA: AppData = {

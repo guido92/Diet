@@ -14,6 +14,18 @@ const CONAD_PACKS: Record<string, { size: number; label: string }> = {
     'Yogurt': { size: 2, label: 'vasetti' },
 };
 
+const SYNONYM_MAP: Record<string, string> = {
+    'mandarini clementini': 'mandarini',
+    'clementini': 'mandarini',
+    'zucchine scure': 'zucchine',
+    'zucchine chiare': 'zucchine',
+    'insalata mista': 'insalata',
+    'insalata iceberg': 'insalata',
+    'petto di pollo': 'pollo',
+    'macinato di manzo': 'macinato',
+    'macinato di bovino': 'macinato',
+};
+
 type Props = {
     profiles: { name: string; plan: WeeklyPlan; guidelines: MealOption[] }[];
     manualItems: ManualItem[];
@@ -98,6 +110,13 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                                 .map(w => w.charAt(0).toUpperCase() + w.slice(1))
                                 .join(' ')
                                 .trim();
+
+                            // 3b. Apply Synonyms
+                            if (SYNONYM_MAP[itemName.toLowerCase()]) {
+                                itemName = SYNONYM_MAP[itemName.toLowerCase()];
+                                // Re-capitalize
+                                itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1);
+                            }
 
                             // 4. Store Detection
                             let detectedStore: string | undefined;
