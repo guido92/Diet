@@ -186,7 +186,13 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
          - **GUSTI**: Evitare se possibile ingredienti listati in 'dislikes' o 'intolerances'.
          - **OBIETTIVO**: ${userPreferences.goal}. Se 'Perdita di Peso', mantieni le porzioni leggere e sazianti.
 
-      1. **DIETA RIGIDA (LUN-GIO)**:
+      1. **PRANZI LUN-VEN (OFFICE MODE)**:
+         - Devono essere **"SCHISCETTA FRIENDLY"**: Facili da trasportare, buoni anche tiepidi o freddi (es. Insalate di riso/farro, Pasta fredda, Poke, Wraps).
+         - O riscaldabili velocemente al microonde (es. Pollo e Riso).
+         - **NO SOLO VERDURE**: Deve essere un pasto completo.
+         - **PREP VELOCE**: Max 15-20 min preparazione la sera prima.
+
+      2. **DIETA RIGIDA (LUN-GIO)**:
          - **ASSOLUTAMENTE NESSUN "PASTO LIBERO", "PIZZA", "SUSHI" O "AMICI" DA LUNEDÌ A GIOVEDÌ.**
          - Giovedì è un giorno DI DIETA come gli altri. Niente eccezioni.
       
@@ -223,7 +229,7 @@ export async function generateWeeklyPlanAI(targetUser?: 'Michael' | 'Jessica'): 
          { 
            "Monday": { 
              "breakfast": "id...", "breakfast_details": { "name": "...", "specificFruit": "..." },
-             "lunch": "id...", "lunch_details": { "name": "...", "specificVeg": "...", "specificProtein": "...", "specificCarb": "..." },
+             "lunch": "id...", "lunch_details": { "name": "...", "specificVeg": "...", "specificProtein": "...", "specificCarb": "...", "extraIngredients": ["..."], "prepInstructions": "Cucina la sera prima..." },
              ...
            }
          }
@@ -505,7 +511,8 @@ export async function regenerateMealAI(dayName: string, mealType: string): Promi
     Output JSON:
     {
       "name": "Nome Piatto Entusiasmante (es. Pollo al Curry Light)",
-      "description": "Breve descrizione appetitosa (max 1 frasi)"
+      "description": "Breve descrizione appetitosa (max 1 frasi)",
+      "extraIngredients": ["...LISTA DI TUTTI GLI INGREDIENTI EXTRA (Spezie, Verdure soffritto, Odori, Limone, ecc) che servono per la ricetta e NON sono nelle linee guida..."]
     }
   `;
 
@@ -524,6 +531,7 @@ export async function regenerateMealAI(dayName: string, mealType: string): Promi
   (user.plan[dayName] as any)[`${mealType}_details`] = {
     name: details.name,
     recipe: details.description,
+    extraIngredients: (details as any).extraIngredients || [],
     recipeUrl: '', // Clear old
     imageUrl: ''   // Clear old
   };

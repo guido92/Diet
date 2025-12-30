@@ -29,6 +29,24 @@ export async function updateUserGuidelines(guidelines: MealOption[]) {
     await saveData(data);
 }
 
+
+
+export async function addWaterGlass() {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+
+    const today = new Date().toISOString().split('T')[0];
+    if (user.lastWaterDate !== today) {
+        user.waterGlasses = 0;
+        user.lastWaterDate = today;
+    }
+
+    user.waterGlasses = (user.waterGlasses || 0) + 1;
+    await saveData(data);
+    revalidatePath('/');
+}
+
 export async function updateUserProfile(profileData: Partial<UserProfile>) {
     const data = await getData();
     const userRole = (await getUserSession()) || 'Michael';
@@ -280,6 +298,9 @@ export type MealDetails = {
     recipe: string;
     recipeUrl?: string; // Link to external recipe (e.g. GialloZafferano)
     imageUrl?: string;  // Scraped Image URL
+    extraIngredients?: string[]; // Spices, herbs, extras
+    prepInstructions?: string; // AI tips for meal prep (e.g. "Cook tonight")
+    isPrepared?: boolean; // If user has prepped it
     specificFruit?: string; // e.g. "Mele" instead of "Frutta"
     specificVeg?: string;   // e.g. "Broccoli" instead of "Verdura"
     specificProtein?: string;   // e.g. "Orata" instead of "Pesce Bianco"
@@ -308,6 +329,8 @@ export type UserProfile = {
     intolerances?: string;
     dislikes?: string;
     allergies?: string;
+    waterGlasses?: number; // Daily counter, resets on date change logic (handled in frontend or check valid date)
+    lastWaterDate?: string; // Date of last water reset
 };
 
 export type WeeklyPlan = Record<string, DailyPlan>;

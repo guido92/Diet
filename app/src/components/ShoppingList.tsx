@@ -118,6 +118,20 @@ export default function ShoppingList({ profiles, manualItems, conadFlyers, activ
                                 itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1);
                             }
 
+                            // 2b. Add Extra Ingredients (Spices, Herbs, etc.)
+                            if (details && details.extraIngredients && Array.isArray(details.extraIngredients)) {
+                                details.extraIngredients.forEach((extra: string) => {
+                                    const extraName = extra.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                    if (!extraName) return;
+
+                                    if (!totals[extraName]) {
+                                        totals[extraName] = { amount: 0, unit: 'q.b.', owners: new Set(), subItems: {}, store: undefined };
+                                    }
+                                    totals[extraName].amount += 1; // Count occurrences
+                                    totals[extraName].owners.add(userName);
+                                });
+                            }
+
                             // 4. Store Detection
                             let detectedStore: string | undefined;
 

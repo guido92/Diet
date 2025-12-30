@@ -19,9 +19,10 @@ type Props = {
     day?: string;
     type?: string;
     specificProtein?: string;
+    compact?: boolean;
 };
 
-export default function RecipeCard({ mealName, description, user, recipeUrl, imageUrl, eaten, rating, day, type, specificProtein }: Props) {
+export default function RecipeCard({ mealName, description, user, recipeUrl, imageUrl, eaten, rating, day, type, specificProtein, compact }: Props) {
     const [recipe, setRecipe] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -119,14 +120,20 @@ export default function RecipeCard({ mealName, description, user, recipeUrl, ima
                 accept="image/*"
                 onChange={handleFileChange}
             />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: compact ? '4px' : '8px' }}>
                 <button
                     className="btn"
-                    style={{ fontSize: '0.8rem', padding: '6px 12px', background: '#334155', color: 'white' }}
+                    style={{
+                        fontSize: compact ? '0.7rem' : '0.8rem',
+                        padding: compact ? '4px 8px' : '6px 12px',
+                        background: '#334155',
+                        color: 'white',
+                        height: compact ? '28px' : 'auto'
+                    }}
                     onClick={handleAskChef}
                 >
-                    <ChefHat size={16} style={{ marginRight: '6px' }} />
-                    Chef
+                    <ChefHat size={compact ? 14 : 16} style={{ marginRight: '6px' }} />
+                    {compact ? 'Chef' : 'Chiedi allo Chef'}
                 </button>
 
                 {day && type && (
