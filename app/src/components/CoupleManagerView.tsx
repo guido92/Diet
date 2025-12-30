@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { generateCouplePlanPreviewAction } from '@/lib/ai';
+import { GUIDELINES } from '@/lib/guidelines';
 import { saveCouplePlansAction, WeeklyPlan } from '@/lib/data';
 import { Wand2, X, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -78,11 +79,18 @@ export default function CoupleManagerView({ initialMichaelPlan, initialJessicaPl
         // @ts-expect-error - Dynamic access to plan properties
         const mealId = dayPlan[type];
 
+        // 1. Try Details (AI Generated Name)
         // @ts-expect-error - Dynamic access to plan details
         const details = dayPlan[type + '_details'];
         if (details && details.name) return details.name;
 
-        // Fallback to ID if no details (should likely have details from AI plan)
+        // 2. Try Guideline Name (Static Name from ID)
+        if (mealId) {
+            const guideline = GUIDELINES.find(g => g.id === mealId);
+            if (guideline) return guideline.name;
+        }
+
+        // 3. Fallback to ID
         return mealId || '-';
     };
 
