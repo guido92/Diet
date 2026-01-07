@@ -6,30 +6,55 @@ export async function getEccomiFlyerImages(): Promise<string[]> {
         const flyerUrl = await getEccomiFlyerUrl();
         if (!flyerUrl) return [];
 
-        console.log(`Fetching Issuu page: ${flyerUrl}`);
-        const response = await fetch(flyerUrl);
-        const html = await response.text();
+        console.log(`Found Issuu URL: ${flyerUrl}`);
 
-        // Extract Document ID from og:image
-        // Pattern: https://image.issuu.com/251223103558-997ff782d6cfcb77b396bf7074adec5c/jpg/page_1.jpg
-        // Regex: image.issuu.com/([ID])/jpg/page_
-        const match = html.match(/image\.issuu\.com\/([a-zA-Z0-9-]+)\/jpg\/page_/);
+        // 1. Extract Username and Docname from URL
+        // Example: https://issuu.com/coal-srl/docs/promozione_dal_27_dicembre_all_8_ge_9e1da87d8c59dc
+        const urlMatch = flyerUrl.match(/issuu\.com\/([^\/]+)\/docs\/([^\/?#]+)/);
 
-        if (match && match[1]) {
-            const docId = match[1];
-            console.log(`Found Issuu Document ID: ${docId}`);
+        if (!urlMatch) {
+            console.warn('Could not parse Issuu URL structure.');
+            return [];
+        }
 
-            // Generate links for first 15 pages
+        const username = urlMatch[1];
+        const docname = urlMatch[2];
+
+        // 2. Fetch Reader Config
+        const configUrl = `https://publication.issuu.com/${username}/${docname}/reader4.json`;
+        console.log(`Fetching Issuu Config: ${configUrl}`);
+
+        const configResponse = await fetch(configUrl);
+        if (!configResponse.ok) {
+            console.error('Failed to fetch Issuu config:', configResponse.status);
+            return [];
+        }
+
+        const config = await configResponse.json();
+        const pubId = config.publicationId;
+        const revId = config.revisionId; // e.g., "251222111200"
+
+        if (pubId && revId) {
+            console.log(`Issuu Config Found! PubID: ${pubId}, Rev: ${revId}`);
+
+            // 3. Generate Image URLs
+            const pageCount = config.pageCount || 20;
             const images = [];
-            for (let i = 1; i <= 15; i++) {
-                const imgUrl = `https://image.issuu.com/${docId}/jpg/page_${i}.jpg`;
+
+            // Limit to first 15 pages for AI to save token/bandwidth
+            const limit = Math.min(pageCount, 15);
+
+            for (let i = 1; i <= limit; i++) {
+                // Format: https://image.issuu.com/{revisionId}-{publicationId}/jpg/page_{n}.jpg
+                const imgUrl = `https://image.issuu.com/${revId}-${pubId}/jpg/page_${i}.jpg`;
                 images.push(imgUrl);
             }
             return images;
         } else {
-            console.warn('Could not extract Issuu Document ID from page HTML.');
+            console.warn('Issuu Config missing IDs.');
             return [];
         }
+
     } catch (error) {
         console.error('Error getting Eccomi images:', error);
         return [];
@@ -59,6 +84,7 @@ export async function getEccomiFlyerUrl(): Promise<string | null> {
         $('a').each((i, el) => {
             const href = $(el).attr('href');
             if (href && href.includes('issuu.com') && href.includes('coal')) {
+                // Ensure we clean query params if any, though regex above handles them
                 flyerUrl = href;
                 return false; // break
             }
