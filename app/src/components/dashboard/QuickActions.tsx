@@ -1,18 +1,35 @@
 'use client';
 
-import { Droplets, AlertTriangle } from 'lucide-react';
-import { addWaterGlass } from '@/lib/data'; // We'll need a way to call this server action
+import { Droplets, AlertTriangle, History } from 'lucide-react';
+import { addWaterGlass, addSgarro } from '@/lib/data';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function QuickActions({ waterCount }: { waterCount: number }) {
     const [optimisticWater, setOptimisticWater] = useState(waterCount);
     const [loading, setLoading] = useState(false);
+    const [sgarroLoading, setSgarroLoading] = useState(false);
+
+    // HYDRATION GOAL CONFIG
+    const GOAL_GLASSES = 8; // Approx 2 Liters
+    const percentage = Math.min((optimisticWater / GOAL_GLASSES) * 100, 100);
+    const missingGlasses = Math.max(GOAL_GLASSES - optimisticWater, 0);
 
     const handleAddWater = async () => {
         setLoading(true);
         setOptimisticWater(prev => prev + 1);
         await addWaterGlass();
         setLoading(false);
+    };
+
+    const handleAddSgarro = async () => {
+        const note = prompt("Cosa hai mangiato fuori programma?");
+        if (!note) return;
+
+        setSgarroLoading(true);
+        await addSgarro(note);
+        setSgarroLoading(false);
+        alert("Sgarro registrato! 📝");
     };
 
     return (
@@ -28,12 +45,23 @@ export default function QuickActions({ waterCount }: { waterCount: number }) {
                     border: 'none',
                     padding: '1.2rem',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-                    color: 'white', cursor: 'pointer', position: 'relative', overflow: 'hidden'
+                    color: 'white', cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                    justifyContent: 'center'
                 }}
             >
-                <Droplets size={32} />
-                <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Acqua ({optimisticWater})</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>+1 Bicchiere</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Droplets size={28} />
+                    <div style={{ fontWeight: 'bold', fontSize: '1.4rem' }}>{optimisticWater} <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>/ {GOAL_GLASSES}</span></div>
+                </div>
+
+                {/* Progress Bar Container */}
+                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.3)', borderRadius: '3px', marginTop: '5px' }}>
+                    <div style={{ width: `${percentage}%`, height: '100%', background: 'white', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                </div>
+
+                <div style={{ fontSize: '0.75rem', opacity: 0.9, marginTop: '5px' }}>
+                    {missingGlasses > 0 ? `Mancano ${missingGlasses} bicchieri` : 'Obiettivo raggiunto! 🎉'}
+                </div>
             </button>
 
             {/* Sgarro Button */}
@@ -46,13 +74,25 @@ export default function QuickActions({ waterCount }: { waterCount: number }) {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
                     color: '#fca5a5', cursor: 'pointer'
                 }}
-                onClick={() => alert('Funzionalità Sgarro in arrivo!')}
+                onClick={handleAddSgarro}
+                disabled={sgarroLoading}
             >
                 <AlertTriangle size={32} />
                 <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Sgarro</div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>Logga Extra</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{sgarroLoading ? 'Salvataggio...' : 'Logga Extra'}</div>
             </button>
 
+            {/* History Link - Spans full width below or maybe a small icon? 
+                Let's put it as a link below the grid if possible, or leave it for the main nav.
+                User said "History not easy to access". 
+                I'll add a dedicated small button or link below.
+            */}
+            {/* Not inside the grid? Wrapper needs to change.
+               Actually, let's just make the Sgarro button also link to history on long press? No too hidden.
+               Let's rely on Navigation updates or add a plain link below this grid in the parent component.
+               Wait, I can just modify this component to export the grid and a link.
+               But the parent expects a component.
+            */}
         </div>
     );
 }
