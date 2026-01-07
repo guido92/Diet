@@ -5,7 +5,7 @@ import { MealOption, generateLocalPlan, getSeasonalFruit, getSeasonalVeg, GUIDEL
 import { WeeklyPlan, updateUserGuidelines, getData, updateActiveOffers, ConadOffer, saveData, DailyPlan, getRecipeAction, saveRecipeAction } from './data';
 import { searchGialloZafferano } from './scraper';
 import { revalidatePath } from 'next/cache';
-import { getEccomiFlyerUrl } from './eccomi';
+import { getEccomiFlyerUrl, getEccomiFlyerImages } from './eccomi';
 
 // const pdf = require('pdf-parse'); // Lazy loaded inside functions
 // const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || ''); // REMOVED GLOBAL INSTANTIATION
@@ -720,6 +720,73 @@ export async function generateBothPlansAction(): Promise<{ success: boolean; mes
   }
   return { success: false, message: result.message };
 }
+
+/**
+ * VISUAL AI EXTRACTION (Gemini 2.0 Flash)
+ */
+async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
+  if (images.length === 0) return [];
+
+  // Use a fresh instance for the specific model if needed, or reuse generic
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+  const prompt = `
+    Analizza le immagini di questo volantino supermercato ("Eccomi").
+    Il tuo obiettivo è estrarre le OFFERTE ALIMENTARI più rilevanti.
+    
+    FOCUS: Carne, Pesce, Ortofrutta, Freschi, Dispensa.
+    IGNORA: Prodotti per la casa generici se non sono in forte evidenza.
+
+    Estrai un ARRAY JSON puro con questi campi:
+    [
+      {
+        "categoria": "Carne" | "Pesce" | "Frutta" | "Verdura" | "Latticini" | "Dispensa/Altro",
+        "prodotto": "Nome del prodotto",
+        "prezzo": "Prezzo (es. 1,99 €)",
+        "unita": "Unità (es. al kg, conf 2pz)",
+        "sconto": "Sconto (es. -20% o SOTTOCOSTO)",
+        "negozio": "Eccomi Cesena"
+      }
+    ]
+
+    REGOLE:
+    - Se il prezzo non è chiaro, ignora l'articolo.
+    - Se l'immagine non è leggibile, ignorala.
+    - Rispondi SOLO con il JSON.
+  `;
+
+  // Payload Construction
+  // Note: Gemini accepts max 16 images usually. We should chunk if > 15.
+  // For now, let's take max 15 pages.
+  const limitedImages = images.slice(0, 15);
+
+  const parts: any[] = [prompt];
+  limitedImages.forEach(buff => {
+    parts.push({
+      inlineData: {
+        data: buff.toString('base64'),
+        mimeType: 'image/jpeg'
+      }
+    });
+  });
+
+  try {
+    console.log('[VISION] Invoking Gemini 2.0 Flash...');
+    const result = await model.generateContent(parts);
+    const text = result.response.text();
+
+    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const data = JSON.parse(jsonStr);
+
+    if (Array.isArray(data)) return data;
+    return [];
+  } catch (e) {
+    console.error('Gemini Vision Extraction Failed:', e);
+    return [];
+  }
+}
+
 const CONAD_STORES = [
   { id: '008400', key: 'Bessarione', name: 'Conad Ponte Abbadesse', url: 'https://www.conad.it/ricerca-negozi/conad-piazzale-cardinal-bessarione-99-47521-cesena--008400' },
   { id: '007226', key: 'Lucchi', name: 'Conad Montefiore', url: 'https://www.conad.it/ricerca-negozi/spazio-conad-via-leopoldo-lucchi-525-47521-cesena--007226' }
@@ -836,13 +903,44 @@ export async function smartSyncOffersAction(): Promise<{ success: boolean; messa
       await saveData(eccomiData);
 
       try {
-        const eccomiUrl = await getEccomiFlyerUrl();
-        if (eccomiUrl) {
-          console.log(`Found Eccomi Flyer: ${eccomiUrl}`);
-          // We add it to the list. We don't have offer extraction for Issuu yet, so we skip extraction.
-          data.conadFlyers.push({ url: eccomiUrl, lastSync: new Date().toISOString(), label: 'Eccomi (Cesena)', storeId: 'eccomi-cesena' });
+        const eccomiImages = await getEccomiFlyerImages();
+        if (eccomiImages.length > 0) {
+          const flyerUrl = await getEccomiFlyerUrl() || 'https://www.eccomisupermercati.it/offerte/';
+          console.log(`Found Eccomi Flyer Images: ${eccomiImages.length} pages`);
+
+          data.conadFlyers.push({ url: flyerUrl, lastSync: new Date().toISOString(), label: 'Eccomi (Cesena) - New', storeId: 'eccomi-cesena' });
           flyersFound++;
+
+          // --- VISUAL EXTRACTION ---
+          // Fetch images as buffers
+          const imageBuffers: Buffer[] = [];
+          console.log('Downloading Eccomi images for AI...');
+          for (const imgUrl of eccomiImages) {
+            try {
+              const resp = await fetch(imgUrl);
+              if (resp.ok) {
+                const arr = await resp.arrayBuffer();
+                imageBuffers.push(Buffer.from(arr));
+              }
+            } catch (e) { console.error('Failed to fetch flyer page:', imgUrl); }
+          }
+
+          if (imageBuffers.length > 0) {
+            console.log(`Sending ${imageBuffers.length} images to Gemini Vision...`);
+            eccomiData.syncStatus = { state: 'running', message: `Analisi Visiva Eccomi (${imageBuffers.length} pag)...`, lastUpdate: Date.now() };
+            await saveData(eccomiData);
+
+            const eccomiOffers = await extractOffersFromImagesAI(imageBuffers);
+            console.log(`[ECCOMI VISION] Extracted ${eccomiOffers.length} offers.`);
+            if (eccomiOffers.length > 0) {
+              newActiveOffers = [...newActiveOffers, ...eccomiOffers];
+              totalOffers += eccomiOffers.length;
+            }
+          }
+        } else {
+          console.log('No Eccomi images found.');
         }
+
       } catch (e: unknown) { console.error('Eccomi fail', e); }
 
       // SAVE SUCCESS

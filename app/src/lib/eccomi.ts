@@ -1,6 +1,41 @@
 
 import * as cheerio from 'cheerio';
 
+export async function getEccomiFlyerImages(): Promise<string[]> {
+    try {
+        const flyerUrl = await getEccomiFlyerUrl();
+        if (!flyerUrl) return [];
+
+        console.log(`Fetching Issuu page: ${flyerUrl}`);
+        const response = await fetch(flyerUrl);
+        const html = await response.text();
+
+        // Extract Document ID from og:image
+        // Pattern: https://image.issuu.com/251223103558-997ff782d6cfcb77b396bf7074adec5c/jpg/page_1.jpg
+        // Regex: image.issuu.com/([ID])/jpg/page_
+        const match = html.match(/image\.issuu\.com\/([a-zA-Z0-9-]+)\/jpg\/page_/);
+
+        if (match && match[1]) {
+            const docId = match[1];
+            console.log(`Found Issuu Document ID: ${docId}`);
+
+            // Generate links for first 15 pages
+            const images = [];
+            for (let i = 1; i <= 15; i++) {
+                const imgUrl = `https://image.issuu.com/${docId}/jpg/page_${i}.jpg`;
+                images.push(imgUrl);
+            }
+            return images;
+        } else {
+            console.warn('Could not extract Issuu Document ID from page HTML.');
+            return [];
+        }
+    } catch (error) {
+        console.error('Error getting Eccomi images:', error);
+        return [];
+    }
+}
+
 export async function getEccomiFlyerUrl(): Promise<string | null> {
     try {
         console.log('Scraping Eccomi offers page...');
@@ -19,19 +54,11 @@ export async function getEccomiFlyerUrl(): Promise<string | null> {
         const html = await response.text();
         const $ = cheerio.load(html);
 
-        // Logic: Find the "Cesena" section or general flyer.
-        // Based on previous analysis, we look for Issuu links or "Sfoglia volantino"
-        // typically associated with the store list or main slider.
-
-        // 1. Look for specific Cesena link if possible
-        // (Simplified strategy from previous success: search for Issuu link in likely containers)
-
         let flyerUrl: string | null = null;
 
         $('a').each((i, el) => {
             const href = $(el).attr('href');
             if (href && href.includes('issuu.com') && href.includes('coal')) {
-                // Check if it's near "Cesena" text if possible, but usually there's one main flyer
                 flyerUrl = href;
                 return false; // break
             }
