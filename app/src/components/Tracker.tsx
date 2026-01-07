@@ -141,7 +141,7 @@ export default function Tracker({ data }: Props) {
                 <h3 className="subtitle">Diario Sgarri</h3>
                 <ul style={{ listStyle: 'none', fontSize: '0.9rem', color: '#94a3b8' }}>
                     {activeUser.logs.filter(l => l.notes).map((l, i) => (
-                        <li key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid #334155' }}>
+                        <li key={l.id || i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid #334155' }}>
                             <div>
                                 <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{l.date}:</span> <span style={{ color: '#cbd5e1' }}>{l.notes}</span>
                             </div>
@@ -149,12 +149,22 @@ export default function Tracker({ data }: Props) {
                                 onClick={async () => {
                                     if (confirm('Eliminare questo sgarro?')) {
                                         setLoading(true);
-                                        await removeSgarro(l.date, l.notes || '');
+                                        // Fallback for old logs without ID: try to pass undefined or handle in backend?
+                                        // Backend expects string ID. 
+                                        // If no ID, we can't easily delete with new logic. 
+                                        // Ideally we should have migrated. For now, only delete if ID exists.
+                                        if (l.id) {
+                                            await removeSgarro(l.id);
+                                        } else {
+                                            alert("Impossibile eliminare vecchi log senza ID. Contatta supporto o pulisci dati.");
+                                        }
                                         setLoading(false);
                                         window.location.reload();
                                     }
                                 }}
-                                style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                                style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', opacity: l.id ? 1 : 0.3 }}
+                                disabled={!l.id}
+                                title={l.id ? "Elimina" : "Log vecchio non eliminabile"}
                             >
                                 <Trash2 size={16} />
                             </button>

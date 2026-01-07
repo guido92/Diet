@@ -31,12 +31,26 @@ export async function updateUserGuidelines(guidelines: MealOption[]) {
 
 
 
+// Helper for Local Date (Italian Timezone approximation or generic local)
+// We use a simple offset approach or just string slicing on a date object created in the specific timezone if possible.
+// Since we are server-side, "Local" means server time. 
+// Ideally we should use UTC for storage and let client convert, BUT for a simple daily tracker reset, 
+// using a consistent offset (Italy UT+1/2) is safer than UTC if the user is late night.
+function getTodayDateLocal(): string {
+    // 1. Get UTC time
+    const now = new Date();
+    // 2. Add 1 hour (or 2 for DST, but simplified 1h is better than 0)
+    // Actually, `toLocaleString` with timeZone is best
+    return new Date().toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' }).split('/').reverse().join('-');
+    // Returns YYYY-MM-DD format roughly
+}
+
 export async function addWaterGlass() {
     const data = await getData();
     const userRole = (await getUserSession()) || 'Michael';
     const user = data.users[userRole];
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDateLocal();
     if (user.lastWaterDate !== today) {
         user.waterGlasses = 0;
         user.lastWaterDate = today;
@@ -223,7 +237,8 @@ export async function updateWeight(weight: number, notes?: string) {
     const user = data.users[userRole];
     user.currentWeight = weight;
     user.logs.push({
-        date: new Date().toISOString().split('T')[0],
+        id: Math.random().toString(36).substr(2, 9), // Added ID
+        date: getTodayDateLocal(),
         weight,
         notes
     });
@@ -243,42 +258,29 @@ export async function addSgarro(sgarro: string) {
     const data = await getData();
     const userRole = (await getUserSession()) || 'Michael';
     const user = data.users[userRole];
-    const today = new Date().toISOString().split('T')[0];
-    const logIndex = user.logs.findIndex(l => l.date === today);
-    if (logIndex >= 0) {
-        const existing = user.logs[logIndex].notes || '';
-        user.logs[logIndex].notes = existing ? `${existing}, ${sgarro}` : sgarro;
-    } else {
-        user.logs.push({ date: today, notes: sgarro });
-    }
+    const today = getTodayDateLocal();
+
+    // Always add a new log entry for Sgarri for better granularity, or append if desired.
+    // User requested "If I insert a meal by mistake I have no way to remove it".
+    // So creating separate entries is better for deletion.
+    user.logs.push({
+        id: Math.random().toString(36).substr(2, 9),
+        date: today,
+        notes: sgarro
+    });
+
     await saveData(data);
+    revalidatePath('/tracker');
 }
 
-export async function removeSgarro(date: string, noteFragment: string) {
+export async function removeSgarro(id: string) {
     const data = await getData();
     const userRole = (await getUserSession()) || 'Michael';
     const user = data.users[userRole];
 
-    // Find log by date
-    const logIndex = user.logs.findIndex(l => l.date === date);
-    if (logIndex >= 0) {
-        // If exact match of notes, remove log. If partial, maybe remove sub-part? 
-        // For simplicity, if we pass the full note content, we remove the log or clear it.
-        // User asked to remove "items".
-        // If sgarro is "Pizza, Birra", and we want to remove "Birra"?
-        // Complexity. current UI shows one line. Let's just remove the day's sgarro for now or specific log entry if we had IDs.
-        // We don't have IDs for logs. We have Date.
-        const notes = user.logs[logIndex].notes || '';
-        if (notes === noteFragment) {
-            user.logs.splice(logIndex, 1);
-        } else {
-            // Try to remove split by comma?
-            // Simple approach: Remove the whole log for that date if the user confirms.
-            // But the UI iterates over logs.
-            // Let's assume we remove the log entry found at that index.
-            user.logs.splice(logIndex, 1);
-        }
-    }
+    // Filter by ID
+    user.logs = user.logs.filter(l => l.id !== id);
+
     await saveData(data);
     revalidatePath('/tracker');
 }
@@ -350,6 +352,7 @@ export type DailyPlan = {
 };
 
 export type LogEntry = {
+    id?: string; // New field for deletion
     date: string; // ISO Date YYYY-MM-DD
     weight?: number;
     notes?: string;
