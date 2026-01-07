@@ -1,7 +1,12 @@
-import { UserProfile, updateUserProfile, resetUserData } from '@/lib/data';
-import { User, Activity, AlertCircle, Save, Trash2, RefreshCw } from 'lucide-react';
+'use client';
 
-// ... (keep existing imports/types)
+import { useState } from 'react';
+import { UserProfile, updateUserProfile, resetUserData } from '@/lib/data';
+import { User, Activity, AlertCircle, Save, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
+
+type Props = {
+    initialData: UserProfile;
+};
 
 export default function ProfileEditor({ initialData }: Props) {
     // ... (keep existing state)
