@@ -661,3 +661,28 @@ export async function saveRecipeAction(mealName: string, recipe: RecipeCacheItem
 }
 
 
+
+export async function resetUserData(scope: 'daily' | 'plan' | 'full') {
+    const data = await getData();
+    const userRole = (await getUserSession()) || 'Michael';
+    const user = data.users[userRole];
+
+    if (scope === 'daily' || scope === 'full') {
+        user.waterGlasses = 0;
+        // user.lastWaterDate = new Date().toISOString().split('T')[0]; // Actually better to leave date, just 0 glasses.
+    }
+
+    if (scope === 'plan' || scope === 'full') {
+        user.plan = {}; // Clear the plan
+    }
+
+    if (scope === 'full') {
+        user.logs = []; // Clear weight/sgarro history
+    }
+
+    await saveData(data);
+    revalidatePath('/');
+    revalidatePath('/planner');
+    revalidatePath('/tracker');
+    revalidatePath('/profile');
+}

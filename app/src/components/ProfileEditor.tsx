@@ -1,48 +1,33 @@
-'use client';
+import { UserProfile, updateUserProfile, resetUserData } from '@/lib/data';
+import { User, Activity, AlertCircle, Save, Trash2, RefreshCw } from 'lucide-react';
 
-import { useState } from 'react';
-import { UserProfile, updateUserProfile } from '@/lib/data';
-import { User, Activity, AlertCircle, Save } from 'lucide-react';
-
-type Props = {
-    initialData: UserProfile;
-};
+// ... (keep existing imports/types)
 
 export default function ProfileEditor({ initialData }: Props) {
-    const [formData, setFormData] = useState({
-        startWeight: initialData.startWeight,
-        targetWeight: initialData.targetWeight,
-        height: initialData.height,
-        birthDate: initialData.birthDate || '',
-        sex: initialData.sex || 'M',
-        activityLevel: initialData.activityLevel || 'sedentary',
-        intolerances: initialData.intolerances || '',
-        dislikes: initialData.dislikes || '',
-        allergies: initialData.allergies || ''
-    });
-    const [loading, setLoading] = useState(false);
-
-    const bmi = formData.height > 0 ? (initialData.currentWeight / ((formData.height / 100) * (formData.height / 100))).toFixed(1) : 'N/A';
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleChange = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+    // ... (keep existing state)
 
     const handleSave = async () => {
+        // ... (keep existing save logic)
+    };
+
+    const handleReset = async (scope: 'daily' | 'plan' | 'full') => {
+        const msg = scope === 'full' ? 'ATTENZIONE: Questo cancellerà TUTTI i tuoi dati (piano, diario, statistiche). Sei sicuro?' :
+            scope === 'plan' ? 'Cancellare il piano settimanale corrente? Dovrai rigenerarlo.' :
+                'Resettare i conteggi di oggi (acqua, ecc)?';
+
+        if (!confirm(msg)) return;
+
         setLoading(true);
-        await updateUserProfile({
-            ...formData,
-            startWeight: Number(formData.startWeight),
-            targetWeight: Number(formData.targetWeight),
-            height: Number(formData.height)
-        });
+        await resetUserData(scope);
         setLoading(false);
-        alert('Profilo aggiornato!');
+        alert('Reset effettuato.');
+        window.location.reload();
     };
 
     return (
         <div style={{ paddingBottom: '5rem' }}>
+            {/* ... (Existing Profile UI) ... */}
+
             <h2 className="title flex items-center gap-2"><User /> Profilo Utente</h2>
 
             {/* BMI Card */}
@@ -122,6 +107,25 @@ export default function ProfileEditor({ initialData }: Props) {
                             placeholder="Lattosio, Glutine, Arachidi..."
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* DANGER ZONE */}
+            <div className="card" style={{ borderColor: '#ef4444', marginTop: '2rem' }}>
+                <h3 className="subtitle flex items-center gap-2" style={{ color: '#ef4444' }}><AlertTriangle size={18} /> Area Pericolosa</h3>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1rem' }}>
+                    Queste operazioni sono irreversibili. Usale se hai bisogno di pulire i dati.
+                </p>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                    <button onClick={() => handleReset('daily')} className="btn" style={{ background: '#334155', color: 'white', justifyContent: 'flex-start' }}>
+                        <RefreshCw size={16} style={{ marginRight: '8px' }} /> Reset Giornaliero (Acqua)
+                    </button>
+                    <button onClick={() => handleReset('plan')} className="btn" style={{ background: '#334155', color: 'white', justifyContent: 'flex-start' }}>
+                        <RefreshCw size={16} style={{ marginRight: '8px' }} /> Reset Piano (Cancella Menù)
+                    </button>
+                    <button onClick={() => handleReset('full')} className="btn" style={{ background: '#ef4444', color: 'white', justifyContent: 'flex-start' }}>
+                        <Trash2 size={16} style={{ marginRight: '8px' }} /> Reset Totale (Cancella Tutto)
+                    </button>
                 </div>
             </div>
 

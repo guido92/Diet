@@ -82,17 +82,16 @@ export default function QuickActions({ waterCount }: { waterCount: number }) {
                 <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{sgarroLoading ? 'Salvataggio...' : 'Logga Extra'}</div>
             </button>
 
-            {/* History Link - Spans full width below or maybe a small icon? 
-                Let's put it as a link below the grid if possible, or leave it for the main nav.
-                User said "History not easy to access". 
-                I'll add a dedicated small button or link below.
-            */}
-            {/* Not inside the grid? Wrapper needs to change.
-               Actually, let's just make the Sgarro button also link to history on long press? No too hidden.
-               Let's rely on Navigation updates or add a plain link below this grid in the parent component.
-               Wait, I can just modify this component to export the grid and a link.
-               But the parent expects a component.
-            */}
+            {/* History Link */}
+            <Link href="/tracker" style={{ gridColumn: '1 / -1', textDecoration: 'none' }}>
+                <div className="card btn-press" style={{
+                    background: '#1e293b', padding: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#94a3b8', border: '1px solid #334155'
+                }}>
+                    <History size={18} />
+                    <span>Vedi Diario Completo</span>
+                </div>
+            </Link>
+
         </div>
     );
 }
