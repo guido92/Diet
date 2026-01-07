@@ -1019,53 +1019,7 @@ export async function processFlyerUrlAction(url: string): Promise<{ success: boo
  * Scrapes a Web Viewer (images) and uses Multimodal AI.
  */
 // 2. Extract Offers using Gemini Vision
-async function extractOffersFromImagesAI(images: Buffer[]): Promise<ConadOffer[]> {
-  if (images.length === 0) return [];
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
-  // 2.0 Flash is multimodal and available
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-  const prompt = `
-    Analizza queste immagini del volantino "Eccomi".
-    Estrai TUTTE le offerte di prodotti alimentari (Carne, Pesce, Frutta, Verdura, Yogurt, Latte).
-    Ignora prodotti per la casa o non alimentari se non rilevanti.
-    
-    Restituisci un ARRAY JSON con oggetti:
-    {
-      "categoria": "Carne" | "Pesce" | "Frutta" | "Verdura" | "Latticini" | "Dispensa/Altro",
-      "prodotto": "Nome esatto prodotto",
-      "prezzo": "Prezzo (es. 1.50)",
-      "unita": "Unità (es. al kg, al pezzo, conf. 300g)",
-      "sconto": "Sconto se presente (es. -20%)",
-      "negozio": "Eccomi Cesena"
-    }
-
-    REGOLE:
-    - Restituisci SOLO il JSON raw. Nessun markdown.
-    - Se l'immagine è sfocata o non contiene offerte, ignorala.
-  `;
-
-  // Prepare Parts
-  const parts: any[] = [prompt];
-  images.forEach(buff => {
-    parts.push({
-      inlineData: {
-        data: buff.toString('base64'),
-        mimeType: 'image/jpeg'
-      }
-    });
-  });
-
-  try {
-    const result = await model.generateContent(parts);
-    const responseText = result.response.text();
-    const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(jsonStr);
-  } catch (e: unknown) {
-    console.error('Gemini Vision Error:', e);
-    return [];
-  }
-}
 
 async function extractOffersAI(text: string, storeName: string): Promise<ConadOffer[]> {
   const prompt = `
