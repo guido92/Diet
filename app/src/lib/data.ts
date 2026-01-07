@@ -678,6 +678,13 @@ export async function resetUserData(scope: 'daily' | 'plan' | 'full') {
 
     if (scope === 'full') {
         user.logs = []; // Clear weight/sgarro history
+
+        // Reset shared data (Shopping List, Offers, Pantry)
+        data.manualShoppingItems = [];
+        data.pantryItems = [];
+        data.activeOffers = [];
+        data.conadFlyers = [];
+        data.lastOfferUpdate = undefined;
     }
 
     await saveData(data);
@@ -685,4 +692,5 @@ export async function resetUserData(scope: 'daily' | 'plan' | 'full') {
     revalidatePath('/planner');
     revalidatePath('/tracker');
     revalidatePath('/profile');
+    revalidatePath('/shopping');
 }
