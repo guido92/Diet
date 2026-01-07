@@ -54,21 +54,28 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
         throw e;
       }
 
-      const isRateLimit = msg.includes('429') || msg.includes('Too Many Requests');
+      const isRateLimit = msg.includes('429') || msg.includes('Too Many Requests') || msg.includes('Quota');
 
       // Smart Retry logic
       if (isRateLimit) {
-        // Extract time: "Please retry in 8.117652176s"
+        console.warn(`[AI ROTATION] ⚠️ Quota Hit on ${modelId}.`);
+
+        // If there are other models left in the shuffle, SKIP waiting and let the loop continue to the next one.
+        if (i < shuffledModels.length - 1) {
+          console.log(`[AI ROTATION] ⏩ Skipping wait, failing over to next model immediately...`);
+          continue;
+        }
+
+        // If this is the LAST model, then we MUST wait and retry.
         const match = msg.match(/retry in ([0-9\.]+)s/);
         if (match && match[1]) {
           const seconds = parseFloat(match[1]);
-          // If wait is reasonable (< 60s), wait and retry SAME model
-          if (seconds < 60) {
-            const waitMs = Math.ceil(seconds * 1000) + 1000; // Add 1s safety
-            console.log(`[AI ROTATION] ⏳ Quota Hit. Waiting ${waitMs}ms as requested...`);
+          if (seconds < 65) {
+            const waitMs = Math.ceil(seconds * 1000) + 1000;
+            console.log(`[AI ROTATION] ⏳ Last Model Quota Hit. Waiting ${waitMs}ms...`);
             await new Promise(r => setTimeout(r, waitMs));
 
-            // RETRY ONCE
+            // RETRY ONCE the last model
             try {
               console.log(`[AI ROTATION] 🔄 Retrying ${modelId} after wait...`);
               const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
@@ -78,7 +85,7 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
               return result.response.text();
             } catch (retryError: unknown) {
               const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
-              console.warn(`[AI ROTATION] ❌ Retry Failed on ${modelId}. Moving on.`);
+              console.warn(`[AI ROTATION] ❌ Retry Failed on ${modelId}. Giving up.`);
               errors.push(`${modelId} (RETRY): ${retryMsg}`);
             }
           }
@@ -88,7 +95,7 @@ async function callGeminiSafe(prompt: string, modelList: string[]): Promise<stri
       // If we are here, either not rate limit, or retry failed, or wait too long.
       // Small delay before next model to avoid bombarding
       if (i < shuffledModels.length - 1) {
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 500));
       }
     }
   }
