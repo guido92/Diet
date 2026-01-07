@@ -9,7 +9,7 @@ export default function BottomNav() {
 
     const navItems = [
         { href: '/', label: 'Home', icon: Home },
-        { href: '/planner', label: 'Piano', icon: Calendar },
+        { href: '/plan', label: 'Piano', icon: Calendar },
         { href: '/shopping', label: 'Spesa', icon: ShoppingCart },
         { href: '/summary', label: 'Noi', icon: Users },
         { href: '/tracker', label: 'Peso', icon: TrendingUp },

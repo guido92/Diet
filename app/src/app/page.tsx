@@ -1,33 +1,23 @@
 export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
-import { getData, updateAutoRoutineDate } from "@/lib/data";
-import { smartSyncOffersAction, generateBothPlansAction } from "@/lib/ai";
-import PlannerEditor from "@/components/PlannerEditor";
-import { Utensils, User, Users, Wand2, History as HistoryIcon, LogOut } from "lucide-react";
-import { DAYS_MAP, ENGLISH_DAYS } from '@/lib/constants';
-import { getPieceLabel } from '@/lib/conversions';
-import RecipeCard from '@/components/RecipeCard';
+import { getData } from "@/lib/data";
+import { getUserSession, loginAction } from "@/lib/actions";
 import { GUIDELINES } from '@/lib/guidelines';
-import { getUserSession, loginAction, logoutAction } from "@/lib/actions";
+import { ENGLISH_DAYS } from '@/lib/constants';
+import NextMealCard from "@/components/dashboard/NextMealCard";
+import QuickActions from "@/components/dashboard/QuickActions";
+import PrepWidget from "@/components/dashboard/PrepWidget";
+import { ChevronRight } from 'lucide-react';
 
-export default async function Home() {
+export default async function ControlCenter() {
   const session = await getUserSession();
   const data = await getData();
 
-  // If no session, show Login
+  // Redirect/Login Logic (Same as before)
   if (!session) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: '#0f172a',
-        color: 'white',
-        flexDirection: 'column',
-        gap: '2rem'
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '2rem', background: '#0f172a', color: 'white' }}>
         <h1 className="title" style={{ fontSize: '2rem' }}>Chi sta usando questo dispositivo?</h1>
         <div style={{ display: 'flex', gap: '2rem' }}>
           <form action={async () => { 'use server'; await loginAction('Michael'); }}>
@@ -49,215 +39,114 @@ export default async function Home() {
     return <div>Errore caricamento profilo utente. Riprova.</div>;
   }
 
-  const currentWeight = activeUser.currentWeight;
   const waterGlasses = activeUser.waterGlasses || 0;
 
-  // Date Logic
+  // --- LOGIC: NEXT MEAL & PREP ---
   const now = new Date();
   const currentHour = now.getHours();
-  const dayIndex = now.getDay(); // 0=Sun, 1=Mon...
-  const todayIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 0=Mon, 6=Sun
+  const dayIndex = now.getDay();
+  const todayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
   const today = ENGLISH_DAYS[todayIndex];
   const todayPlan = activeUser.plan[today];
 
-  // Tomorrow Logic
   const tomorrowIndex = (todayIndex + 1) % 7;
   const tomorrow = ENGLISH_DAYS[tomorrowIndex];
   const tomorrowPlan = activeUser.plan[tomorrow];
 
   const getMeal = (id: string) => GUIDELINES.find(g => g.id === id);
 
-  // LOGIC: Meal Prep Assistant
-  // Check if Dinner Today == Lunch Tomorrow -> "Cook x2"
-  const dinnerId = todayPlan?.dinner;
-  const tomorrowLunchId = tomorrowPlan?.lunch;
-  const shouldCookDouble = dinnerId && tomorrowLunchId && dinnerId === tomorrowLunchId;
-  const tomorrowLunchMeal = tomorrowLunchId ? getMeal(tomorrowLunchId) : null;
-
-  // LOGIC: Next Meal
-  // Simple time-based heuristic
+  // Determine Next Meal
   let nextMealType = 'Cena';
   let nextMealId = todayPlan?.dinner;
-  let nextMealDetails = todayPlan?.dinner_details;
 
   if (currentHour < 10) {
-    nextMealType = 'Colazione'; nextMealId = todayPlan?.breakfast; nextMealDetails = todayPlan?.breakfast_details;
+    nextMealType = 'Colazione'; nextMealId = todayPlan?.breakfast;
   } else if (currentHour < 12) {
-    nextMealType = 'Spuntino Mattina'; nextMealId = todayPlan?.snack_am; nextMealDetails = todayPlan?.snack_am_details;
+    nextMealType = 'Spuntino Mattina'; nextMealId = todayPlan?.snack_am;
   } else if (currentHour < 15) {
-    nextMealType = 'Pranzo'; nextMealId = todayPlan?.lunch; nextMealDetails = todayPlan?.lunch_details;
+    nextMealType = 'Pranzo'; nextMealId = todayPlan?.lunch;
   } else if (currentHour < 19) {
-    nextMealType = 'Merenda'; nextMealId = todayPlan?.snack_pm; nextMealDetails = todayPlan?.snack_pm_details;
+    nextMealType = 'Merenda'; nextMealId = todayPlan?.snack_pm;
+  }
+  // After 19: Keep Cena as default until midnight loop? Or show tomorrow breakfast? 
+  // For simplicity: after 21 show Tomorrow Breakfast? 
+  if (currentHour >= 22) {
+    nextMealType = 'Colazione (Domani)';
+    nextMealId = tomorrowPlan?.breakfast;
   }
 
   const nextMeal = nextMealId ? getMeal(nextMealId) : null;
 
 
-  // SATURDAY AUTOMATION CHECK
-  let autoRoutineRan = false;
-  const isSaturday = dayIndex === 6;
-  const todayStr = now.toISOString().split('T')[0];
+  // Determine Prep
+  // 1. Dinner overlaps Lunch tomorrow?
+  const dinnerId = todayPlan?.dinner;
+  const tomorrowLunchId = tomorrowPlan?.lunch;
+  const cookingDouble = dinnerId && tomorrowLunchId && dinnerId === tomorrowLunchId;
+  const tomorrowLunchMeal = tomorrowLunchId ? getMeal(tomorrowLunchId) : null;
 
-  if (isSaturday && data.lastAutoRoutine !== todayStr) {
-    console.log('✨ TRIGGERING SATURDAY ROUTINE...');
-    await smartSyncOffersAction();
-    await generateBothPlansAction();
-    await updateAutoRoutineDate();
-    autoRoutineRan = true;
+  // 2. Explicit Prep Instructions for tomorrow lunch
+  const prepInstructions = tomorrowPlan?.lunch_details?.prepInstructions;
+
+  let prepMessage = null;
+  if (cookingDouble) {
+    prepMessage = `Cucina x2 stasera! Lo mangerai anche domani a pranzo (${tomorrowLunchMeal?.name}).`;
+  } else if (prepInstructions && currentHour > 14) { // Show prep instructions only in afternoon/evening
+    prepMessage = prepInstructions;
   }
+
 
   return (
     <div style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto', paddingBottom: '100px' }}>
-      {autoRoutineRan && (
-        <div style={{ background: '#22c55e', color: 'white', padding: '1rem', borderRadius: '12px', marginBottom: '1rem', fontWeight: 'bold', textAlign: 'center' }}>
-          ✨ Routine del Sabato Completata!
-        </div>
-      )}
 
-      {/* HEADER: Dynamic Greeting */}
-      <header className="flex-between" style={{ marginBottom: '1.5rem' }}>
+      {/* HEADER */}
+      <header style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>{DAYS_MAP[today]}</div>
-          <h1 className="title" style={{ margin: 0, fontSize: '1.8rem' }}>Ciao, {currentUser} 👋</h1>
+          <div style={{ textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', opacity: 0.7 }}>Tutto sotto controllo</div>
+          <h1 className="title" style={{ margin: 0, fontSize: '2rem' }}>Ciao, {currentUser}</h1>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Link href="/profile" className="btn-icon" style={{ background: '#334155', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <User size={20} color="white" />
-          </Link>
-          <form action={async () => { 'use server'; await logoutAction(); }}>
-            <button className="btn-icon" style={{ background: '#334155', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none' }}>
-              <LogOut size={20} color="white" />
-            </button>
-          </form>
-        </div>
+        {/* Profile Link Mini */}
+        <Link href="/profile" style={{
+          width: '40px', height: '40px', borderRadius: '50%', background: '#334155',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>👤</span>
+        </Link>
       </header>
 
-      {/* SMART WIDGETS GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+      {/* QUICK ACTIONS */}
+      {/* Placed prominently for easy daily access */}
+      <section>
+        <h3 style={{ fontSize: '1rem', opacity: 0.6, marginBottom: '10px', textTransform: 'uppercase' }}>Azioni Rapide</h3>
+        <QuickActions waterCount={waterGlasses} />
+      </section>
 
-        {/* WIDGET 1: Water Tracker */}
-        <div className="card" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: 'white', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem' }}>
-          <div style={{ fontSize: '3rem', fontWeight: 'bold', lineHeight: 1 }}>{waterGlasses}</div>
-          <div style={{ fontSize: '0.8rem', opacity: 0.9, marginBottom: '0.5rem' }}>Bicchieri d'Acqua</div>
-          <form action={async () => { 'use server'; await import("@/lib/data").then(m => m.addWaterGlass()); }}>
-            <button style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '20px', padding: '5px 15px', cursor: 'pointer', fontSize: '0.9rem' }}>
-              + Aggiungi
-            </button>
-          </form>
-        </div>
+      {/* NEXT MEAL */}
+      <section style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1rem', opacity: 0.6, marginBottom: '10px', textTransform: 'uppercase' }}>Ora di Mangiare</h3>
+        <NextMealCard meal={nextMeal} type={nextMealType} time={nextMealType === 'Colazione' ? '08:00' : '...'} />
+      </section>
 
-        {/* WIDGET 2: Up Next */}
-        <div className="card" style={{ border: '1px solid #334155', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '5px' }}>Prossimo Pasto</div>
-          {nextMeal ? (
-            <>
-              <div style={{ fontWeight: 'bold', fontSize: '1.1rem', lineHeight: 1.2, marginBottom: '5px' }}>{nextMeal.name}</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{nextMealType}</div>
-            </>
-          ) : (
-            <div style={{ opacity: 0.5 }}>Tutto fatto per oggi!</div>
-          )}
-        </div>
+      {/* PREP WIDGET */}
+      {prepMessage && (
+        <section style={{ marginBottom: '2rem' }}>
+          <PrepWidget prepInstructions={prepMessage} tomLunchName={tomorrowLunchMeal?.name} />
+        </section>
+      )}
 
-      </div>
-
-      {/* MEAL PREP ALERT (Conditional) */}
-      {shouldCookDouble && (
-        <div className="card" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', border: 'none', marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <div style={{ fontSize: '2rem' }}>👨‍🍳</div>
+      {/* LINK TO FULL PLAN */}
+      <Link href="/plan" style={{ textDecoration: 'none' }}>
+        <div className="card btn-press" style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '1.5rem', background: '#1e293b', border: '1px solid #334155'
+        }}>
           <div>
-            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Cucina X 2 Stasera!</div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.95 }}>Domani a pranzo hai lo stesso piatto: <b>{tomorrowLunchMeal?.name}</b>.</div>
+            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'white' }}>Vedi Piano Completo</div>
+            <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Controlla tutti i pasti di oggi e domani</div>
           </div>
+          <ChevronRight color="#94a3b8" />
         </div>
-      )}
-
-      {/* TOMORROW PREP (AI Suggestion) */}
-      {!shouldCookDouble && tomorrowLunchMeal && tomorrowPlan?.lunch_details?.prepInstructions && (
-        <div className="card" style={{ background: '#334155', color: '#e2e8f0', border: 'none', marginBottom: '20px', borderLeft: '4px solid #a855f7' }}>
-          <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Wand2 size={16} color="#a855f7" /> Prep per Domani
-          </div>
-          <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
-            {tomorrowPlan.lunch_details.prepInstructions}
-          </div>
-        </div>
-      )}
-
-
-      {/* TODAY'S FULL PLAN */}
-      <h2 className="title" style={{ marginTop: '30px', marginBottom: '15px', fontSize: '1.3rem' }}>Programma di Oggi</h2>
-
-      {todayPlan ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {[
-            { id: todayPlan.breakfast, details: todayPlan.breakfast_details, type: 'Colazione', key: 'breakfast', time: '08:00' },
-            { id: todayPlan.snack_am, details: todayPlan.snack_am_details, type: 'Spuntino', key: 'snack_am', time: '11:00' },
-            { id: todayPlan.lunch, details: todayPlan.lunch_details, type: 'Pranzo', key: 'lunch', time: '13:00' },
-            { id: todayPlan.snack_pm, details: todayPlan.snack_pm_details, type: 'Merenda', key: 'snack_pm', time: '17:00' },
-            { id: todayPlan.dinner, details: todayPlan.dinner_details, type: 'Cena', key: 'dinner', time: '20:00' }
-          ].map((item, idx) => {
-            const meal = getMeal(item.id);
-            if (!meal) return null;
-            const isDone = item.details?.eaten;
-
-            return (
-              <div key={idx} className="card" style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '8px', opacity: isDone ? 0.6 : 1, filter: isDone ? 'grayscale(0.5)' : 'none' }}>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 'bold', background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>{item.time}</span>
-                    <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600 }}>{item.type}</span>
-                  </div>
-                  {isDone && <span style={{ fontSize: '1.2rem' }}>✅</span>}
-                </div>
-
-                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{item.details?.name || meal.name}</div>
-
-                {meal.description && (
-                  <div style={{ fontSize: '0.9rem', color: '#64748b' }}>{meal.description}</div>
-                )}
-
-                {/* Tags/Specifics */}
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '5px' }}>
-                  {item.details?.specificFruit && <span className="tag-fruit">🍎 {item.details.specificFruit}</span>}
-                  {item.details?.specificVeg && <span className="tag-veg">🥦 {item.details.specificVeg}</span>}
-                  {item.details?.specificProtein && <span className="tag-protein">🥩 {item.details.specificProtein}</span>}
-                  {item.details?.specificCarb && <span className="tag-carb">🥖 {item.details.specificCarb}</span>}
-                </div>
-
-                {/* Actions */}
-                <RecipeCard
-                  mealName={item.details?.name || meal.name}
-                  description={meal.description}
-                  user={userRole}
-                  recipeUrl={item.details?.recipeUrl}
-                  imageUrl={item.details?.imageUrl}
-                  eaten={item.details?.eaten}
-                  rating={item.details?.rating}
-                  day={today}
-                  type={item.key}
-                  specificProtein={item.details?.specificProtein}
-                  compact={true} // Hint to RecipeCard to be smaller if possible, or just default behavior
-                />
-
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="card">
-          <p>Nessun piano per oggi.</p>
-          <Link href="/planner" className="btn btn-primary">Crea Piano</Link>
-        </div>
-      )}
-
-      {/* Quick Links Footer */}
-      <div style={{ marginTop: '40px', display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
-        <Link href="/shopping" className="btn" style={{ background: '#334155', minWidth: '120px', justifyContent: 'center' }}>🛒 Spesa</Link>
-        <Link href="/tracker" className="btn" style={{ background: '#334155', minWidth: '120px', justifyContent: 'center' }}>⚖️ Peso</Link>
-        <Link href="/planner" className="btn" style={{ background: '#334155', minWidth: '120px', justifyContent: 'center' }}>📅 Calendario</Link>
-      </div>
+      </Link>
 
     </div>
   );
