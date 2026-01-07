@@ -9,10 +9,36 @@ type Props = {
 };
 
 export default function ProfileEditor({ initialData }: Props) {
-    // ... (keep existing state)
+    const [formData, setFormData] = useState({
+        startWeight: initialData.startWeight,
+        targetWeight: initialData.targetWeight,
+        height: initialData.height,
+        birthDate: initialData.birthDate || '',
+        sex: initialData.sex || 'M',
+        activityLevel: initialData.activityLevel || 'sedentary',
+        intolerances: initialData.intolerances || '',
+        dislikes: initialData.dislikes || '',
+        allergies: initialData.allergies || ''
+    });
+    const [loading, setLoading] = useState(false);
+
+    const bmi = formData.height > 0 ? (initialData.currentWeight / ((formData.height / 100) * (formData.height / 100))).toFixed(1) : 'N/A';
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleChange = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
 
     const handleSave = async () => {
-        // ... (keep existing save logic)
+        setLoading(true);
+        await updateUserProfile({
+            ...formData,
+            startWeight: Number(formData.startWeight),
+            targetWeight: Number(formData.targetWeight),
+            height: Number(formData.height)
+        });
+        setLoading(false);
+        alert('Profilo aggiornato!');
     };
 
     const handleReset = async (scope: 'daily' | 'plan' | 'full') => {
