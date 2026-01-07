@@ -83,7 +83,7 @@ export default function QuickActions({ waterCount }: { waterCount: number }) {
             </button>
 
             {/* History Link */}
-            <Link href="/tracker" style={{ gridColumn: '1 / -1', textDecoration: 'none' }}>
+            <Link href="/diary" style={{ gridColumn: '1 / -1', textDecoration: 'none' }}>
                 <div className="card btn-press" style={{
                     background: '#1e293b', padding: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#94a3b8', border: '1px solid #334155'
                 }}>
